@@ -18,3 +18,5 @@ staticfiles/
 .DS_Store
 test-reports/logs/
 backups/
+e2e/node_modules/
+e2e/screenshots/

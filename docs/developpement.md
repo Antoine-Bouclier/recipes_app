@@ -39,6 +39,19 @@ export DATABASE_URL=postgres://recettes:recettes@localhost:5432/recettes
 
 (exposer le port 5432 du service `db` dans `docker-compose.yml` si besoin).
 
+## Données de démonstration
+
+```bash
+make seed           # base locale (make dev)
+make seed-docker    # base Docker (make up)
+```
+
+Connexion : `demo@recettes.local` / `demo-recettes` (8 recettes) ou
+`autre@recettes.local` / `demo-recettes` (1 recette). Relancer remet tout à
+zéro. Les recettes sont définies dans `backend/recipes/demo_data.py`, au même
+format que le JSON de l'API : pour en ajouter une, ajouter un dictionnaire
+dans `DEMO_RECIPES` (les tests vérifient qu'elle est valide).
+
 ## Variables d'environnement
 
 Voir `.env.example`. Les principales :
@@ -113,6 +126,10 @@ git switch -c feature/minuteur-libre           # créer la branche
 git push -u origin feature/minuteur-libre      # publier la branche
 ```
 
+Avant d'ouvrir la Pull Request, lancer les tests navigateur :
+`make restart && make e2e` (ou `make e2e E2E_URL=http://127.0.0.1:8001` avec
+`make dev`).
+
 Puis sur GitHub : **Pull Request de `feature/minuteur-libre` vers `dev`**,
 relire le diff, fusionner, supprimer la branche. En local ensuite :
 
@@ -126,7 +143,7 @@ corriger les conflits éventuels, `make test`, puis pousser.
 
 ### Publier une version
 
-1. Sur `dev` : `make test` vert, recette manuelle faite ([tests.md](tests.md)),
+1. Sur `dev` : `make test` et `make e2e` verts, recette manuelle faite ([tests.md](tests.md)),
    `VERSION` incrémenté dans `frontend/sw.js` si `frontend/` a changé,
    [suivi-exigences.md](suivi-exigences.md) à jour.
 2. Sur GitHub : **Pull Request de `dev` vers `main`**, fusionner.

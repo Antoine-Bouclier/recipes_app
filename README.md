@@ -27,7 +27,19 @@ make install    # une seule fois : dépendances Python, hook de tests, fichier .
 make up         # démarre l'application avec Docker  →  http://localhost:8000
 ```
 
-Puis créer un compte dans l'application.
+Puis créer un compte, ou charger les **données de démonstration** :
+
+```bash
+make seed-docker   # (make seed pour la base locale de make dev)
+```
+
+| Compte | Mot de passe | Contenu |
+| --- | --- | --- |
+| `demo@recettes.local` | `demo-recettes` | 8 recettes (toutes catégories, favoris, minuteurs), dont « Test des minuteurs » aux durées de 5 à 20 s |
+| `autre@recettes.local` | `demo-recettes` | 1 recette, invisible du compte Démo (vérifie l'isolation entre comptes) |
+
+Relancer la commande remet les données de démo à zéro. Elle refuse de
+s'exécuter en production.
 
 ### Commandes du Makefile
 
@@ -44,6 +56,10 @@ Puis créer un compte dans l'application.
 | `make migrate` | Applique les migrations sur la base locale |
 | `make superuser` | Crée un compte administrateur (base locale, pour `/admin/`) |
 | `make test` | Lance la suite de tests complète, avec trace |
+| `make seed` / `make seed-docker` | Charge (ou réinitialise) les comptes et recettes de démo, base locale / Docker |
+| `make unseed` | Supprime les comptes de démo de la base locale |
+| `make e2e-install` | Installe les dépendances des tests navigateur (une fois) |
+| `make e2e` | Tests de bout en bout dans Chrome, contre l'application lancée |
 | `make shell` / `make dbshell` | Shell Django / console PostgreSQL dans Docker |
 | `make backup` | Sauvegarde la base PostgreSQL dans `backups/` |
 | `make clean` | Supprime les fichiers générés |
@@ -80,6 +96,17 @@ bloque le commit si un test échoue. Il refuse aussi tout commit direct sur
 git config core.hooksPath .githooks
 ```
 
+Tests de bout en bout dans un vrai navigateur (Chrome), application lancée :
+
+```bash
+make e2e-install   # une fois
+make up && make e2e
+```
+
+Ils déroulent 13 scénarios (création de recette, mode cuisine, minuteurs, hors
+ligne, isolation entre comptes, suppression de compte…) avec un compte
+temporaire supprimé à la fin. Trace dans `test-reports/HISTORIQUE-E2E.md`.
+
 Détail des tests et recette manuelle : [docs/tests.md](docs/tests.md).
 
 ## Arborescence
@@ -90,6 +117,7 @@ backend/            API Django
   accounts/         utilisateurs (connexion par e-mail), export/suppression RGPD
   recipes/          recettes, ingrédients, étapes, photo
   cooking/          sessions de cuisine (avancement, minuteurs)
+e2e/                tests de bout en bout (Chrome, puppeteer-core)
 frontend/           interface (servie par Django)
   index.html        page unique
   sw.js             service worker (hors ligne)

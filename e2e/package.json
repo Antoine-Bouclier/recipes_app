@@ -1,0 +1,11 @@
+{
+  "name": "recettes-e2e",
+  "private": true,
+  "description": "Tests de bout en bout dans Chrome (make e2e). Voir docs/tests.md.",
+  "scripts": {
+    "test": "node run.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "13.7.0"
+  }
+}

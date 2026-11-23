@@ -11,8 +11,8 @@ COMPOSE  ?= docker compose
 PORT     ?= 8001
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev migrate superuser test \
-        up down restart rebuild logs ps shell dbshell backup clean
+.PHONY: help install dev migrate superuser test seed seed-docker unseed \
+        e2e e2e-install up down restart rebuild logs ps shell dbshell backup clean
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[1m%-10s\033[0m %s\n", $$1, $$2}'
@@ -41,6 +41,21 @@ superuser: ## Crée un compte administrateur (base locale)
 
 test: ## Lance la suite de tests complète (avec trace dans test-reports/)
 	@./scripts/check.sh
+
+seed: migrate ## Comptes et recettes de démo dans la base locale (demo@recettes.local)
+	@$(MANAGE) seed_demo
+
+unseed: ## Supprime les comptes de démo de la base locale
+	@$(MANAGE) seed_demo --remove
+
+E2E_URL ?= http://localhost:8000
+
+e2e-install: ## Installe les dépendances des tests navigateur (une fois)
+	@cd e2e && npm install --silent
+	@echo "Prêt. Lancer l'application (make up) puis : make e2e"
+
+e2e: ## Tests navigateur (Chrome) contre l'app lancée ; autre adresse : make e2e E2E_URL=http://127.0.0.1:8001
+	@E2E_URL=$(E2E_URL) ./scripts/e2e.sh
 
 # --------------------------------------------------------------- Docker ----
 
@@ -73,6 +88,9 @@ shell: ## Shell Django dans le conteneur
 dbshell: ## Console PostgreSQL
 	@$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" "$$POSTGRES_DB"'
 
+seed-docker: ## Comptes et recettes de démo dans la base Docker
+	@$(COMPOSE) exec web python manage.py seed_demo
+
 backup: ## Sauvegarde la base PostgreSQL dans backups/
 	@./scripts/backup.sh
 
@@ -80,4 +98,4 @@ backup: ## Sauvegarde la base PostgreSQL dans backups/
 
 clean: ## Supprime les fichiers générés (caches Python, statiques collectés)
 	@find . -path ./.venv -prune -o -name __pycache__ -type d -exec rm -r {} +
-	@rm -rf staticfiles
+	@rm -rf staticfiles e2e/screenshots
