@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from recipes.models import Recipe
@@ -25,6 +26,10 @@ class CookingSession(models.Model):
     checked_steps = models.JSONField(default=list, blank=True)
     checked_ingredients = models.JSONField(default=list, blank=True)
     timers = models.JSONField(default=list, blank=True)
+    # Portions choisies pour cette fois-ci (F-08) ; null = celles de la recette.
+    servings = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "recipe"], name="one_session_per_user_recipe")]

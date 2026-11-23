@@ -22,7 +22,7 @@ est dans [tests.md](tests.md#bout-en-bout-e2erunjs).
 | F-05 Modifier, supprimer avec confirmation | ✅ | `views/detail.js` | B, E, M |
 | F-06 Liste et recherche titre/ingrédient | ✅ | `recipes/views.py`, `views/list.js` | B, E |
 | F-07 Filtre catégorie / étiquette | ✅ | `recipes/views.py`, `views/list.js` | B, E |
-| F-08 Ajuster les portions | ✅ | `cooking-state.js` (`scaleQuantity`), `views/detail.js` | F, E |
+| F-08 Ajuster les portions | ✅ | `cooking-state.js` (`scaleQuantity`, `sessionServings`), fiche et mode cuisine, mémorisé dans la session | F, E |
 | F-09 Favoris | ✅ | `views/detail.js`, filtre `favorite=1` | B, E |
 
 ## Mode cuisine

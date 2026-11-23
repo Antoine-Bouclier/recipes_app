@@ -63,6 +63,7 @@ async function push(recipeId) {
       checked_steps: session.checked_steps,
       checked_ingredients: session.checked_ingredients,
       timers: session.timers,
+      servings: session.servings ?? null,
     });
     pending.delete(recipeId);
   } catch (err) {

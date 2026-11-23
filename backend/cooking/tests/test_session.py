@@ -35,6 +35,14 @@ class CookingSessionTests(APITestCase):
         self.assertEqual(r.data["timers"][0]["end_at"], 1_800_000_000_000)
         self.assertFalse(r.data["timers"][0]["paused"])
 
+    def test_servings_are_saved(self):  # F-08 en mode cuisine
+        self.assertIsNone(self.client.get(self.url).data["servings"])
+        r = self.client.put(self.url, {"servings": 8}, format="json")
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(self.client.get(self.url).data["servings"], 8)
+        self.assertEqual(self.client.put(self.url, {"servings": 0}, format="json").status_code, 400)
+        self.assertEqual(self.client.put(self.url, {"servings": None}, format="json").status_code, 200)
+
     def test_invalid_timer(self):
         r = self.client.put(self.url, {"timers": [{"id": "t", "duration": 0}]}, format="json")
         self.assertEqual(r.status_code, 400)

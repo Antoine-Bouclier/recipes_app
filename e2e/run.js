@@ -144,10 +144,15 @@ scenario("Liste : recherche, catégorie, étiquette, favoris (F-06, F-07, F-09)"
   await clickText(page, ".active-tag button", "#e2e");
 });
 
-scenario("Mode cuisine : étape cochée, annuler, étapes terminées repliées (F-10 à F-12, F-14)", async ({ page }) => {
+scenario("Mode cuisine : portions, étape cochée, annuler, étapes terminées repliées (F-08, F-10 à F-12, F-14)", async ({ page }) => {
   await page.goto(`${BASE}/#/recettes/${ctx.recipeId}/cuisine`, { waitUntil: "networkidle0" });
   await page.waitForSelector(".cook-current");
   assert((await text(page, ".progress")) === "0 étape sur 3", "progression initiale");
+  // Portions passées à 4 sur la fiche (scénario 3) : mêmes quantités en mode cuisine (F-08).
+  const first = await text(page, ".cook-ingredient-list li");
+  assert(first === "400 g spaghetti", `quantité en mode cuisine : ${first}`);
+  await page.click('.cook-ingredients button[aria-label="Une portion de moins"]');
+  await page.waitForFunction(() => document.querySelector(".cook-ingredient-list li").textContent === "300 g spaghetti");
   // Ingrédients au-dessus de l'étape en cours.
   const order = await page.evaluate(() =>
     document.querySelector(".cook-ingredients").getBoundingClientRect().top

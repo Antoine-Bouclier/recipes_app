@@ -194,6 +194,8 @@ button.chip { min-height: 40px; }
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 4px 12px; max-height: 32vh; overflow-y: auto; box-shadow: var(--shadow);
 }
+.cook-ingredients-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.cook-ingredients-head h2 { margin: 4px 0; font-size: 1.05rem; }
 .cook-ingredient-list { list-style: none; margin: 0; padding: 0; columns: 2 220px; column-gap: 16px; }
 .cook-ingredient-list li { break-inside: avoid; font-size: 1.05rem; }
 .cook-ingredient-list .is-checked span { text-decoration: line-through; color: var(--muted); }

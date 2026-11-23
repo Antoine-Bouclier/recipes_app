@@ -92,6 +92,7 @@ Règles d'écriture :
   "updated_at": "…",
   "checked_steps": [20],
   "checked_ingredients": [10],
+  "servings": 8,
   "timers": [
     {
       "id": "tmabc1",
@@ -109,4 +110,6 @@ Règles d'écriture :
 
 - `end_at` : heure de fin en millisecondes depuis 1970 (minuteur en cours).
 - En pause : `paused: true`, `end_at: null`, `remaining` = millisecondes restantes.
+- `servings` : portions choisies pour cette session (1 à 100), `null` = celles de la recette.
+  Partagé entre la fiche et le mode cuisine ; conservé par « Recommencer ».
 - Les ids d'étapes ou d'ingrédients inconnus sont ignorés ; 20 minuteurs maximum.

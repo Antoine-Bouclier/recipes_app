@@ -23,7 +23,9 @@ class CookingSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CookingSession
-        fields = ("recipe", "started_at", "updated_at", "checked_steps", "checked_ingredients", "timers")
+        fields = (
+            "recipe", "started_at", "updated_at", "checked_steps", "checked_ingredients", "timers", "servings",
+        )
         read_only_fields = ("recipe", "started_at", "updated_at")
 
     def validate_timers(self, value):
@@ -45,5 +47,7 @@ class CookingSessionSerializer(serializers.ModelSerializer):
             )
         if "timers" in validated_data:
             instance.timers = [dict(t) for t in validated_data["timers"]]
+        if "servings" in validated_data:
+            instance.servings = validated_data["servings"]
         instance.save()
         return instance

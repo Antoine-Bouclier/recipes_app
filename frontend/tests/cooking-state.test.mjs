@@ -1,7 +1,8 @@
 import assert from "assert/strict";
 import { test, run } from "./runner.mjs";
 import {
-  emptySession, formatQuantity, pickNewest, progressLabel, scaleQuantity, splitSteps, toggleId,
+  emptySession, formatQuantity, pickNewest, progressLabel, scaleQuantity, sessionServings, splitSteps,
+  stepServings, toggleId,
 } from "../static/js/cooking-state.js";
 
 const steps = [1, 2, 3, 4].map((id) => ({ id, text: `Étape ${id}` }));
@@ -61,6 +62,17 @@ test("ajustement des portions (F-08)", () => {
   assert.equal(scaleQuantity(null, 4, 2), null);
   assert.equal(formatQuantity(200), "200");
   assert.equal(formatQuantity(null), "");
+});
+
+test("les portions choisies sont gardées pour le mode cuisine (F-08)", () => {
+  const recipe = { servings: 4 };
+  assert.equal(sessionServings(null, recipe), 4);
+  assert.equal(sessionServings(emptySession(), recipe), 4);
+  assert.equal(sessionServings({ servings: 8 }, recipe), 8);
+  assert.equal(sessionServings({ servings: 0 }, recipe), 4);
+  assert.equal(stepServings(1, -1), 1);
+  assert.equal(stepServings(100, 1), 100);
+  assert.equal(stepServings(4, 1), 5);
 });
 
 run("cooking-state.test.mjs");

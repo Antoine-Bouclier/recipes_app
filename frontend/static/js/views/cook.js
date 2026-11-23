@@ -8,7 +8,7 @@
  * défaut. L'avancement est sauvegardé localement et sur le serveur (F-15).
  */
 import { Api } from "../api.js";
-import { progressLabel, splitSteps, toggleId } from "../cooking-state.js";
+import { progressLabel, sessionServings, splitSteps, stepServings, toggleId } from "../cooking-state.js";
 import { clear, h, setTitle, toast } from "../dom.js";
 import * as sessions from "../sessions.js";
 import * as timers from "../timer-manager.js";
@@ -54,16 +54,29 @@ export async function cookView(root, { id }) {
     return h("p", { class: "timer-status" }, `⏱ ${label}`);
   }
 
+  function changeServings(delta) {
+    update((s) => {
+      const next = stepServings(sessionServings(s, recipe), delta);
+      return { ...s, servings: next === recipe.servings ? null : next };
+    });
+  }
+
   function renderIngredients() {
     const s = session();
+    const servings = sessionServings(s, recipe);
     clear(ingredientsBox).append(
-      h("h2", { class: "visually-hidden" }, "Ingrédients"),
+      h("div", { class: "cook-ingredients-head" },
+        h("h2", {}, "Ingrédients"),
+        h("div", { class: "stepper", role: "group", "aria-label": "Nombre de portions" },
+          h("button", { class: "btn btn-small", onclick: () => changeServings(-1), "aria-label": "Une portion de moins" }, "−"),
+          h("output", { "aria-live": "polite" }, `${servings} pers.`),
+          h("button", { class: "btn btn-small", onclick: () => changeServings(1), "aria-label": "Une portion de plus" }, "+"))),
       h("ul", { class: "cook-ingredient-list" }, recipe.ingredients.map((ing) => {
         const checked = s.checked_ingredients.includes(ing.id);
         return h("li", { class: checked ? "is-checked" : "" },
           h("label", { class: "check" },
             h("input", { type: "checkbox", checked, onchange: () => update((x) => ({ ...x, checked_ingredients: toggleId(x.checked_ingredients, ing.id) })) }),
-            h("span", {}, ingredientLine(ing, recipe.servings, recipe.servings))));
+            h("span", {}, ingredientLine(ing, recipe.servings, servings))));
       })));
   }
 
@@ -111,8 +124,10 @@ export async function cookView(root, { id }) {
 
   async function restart() {
     if (!window.confirm("Recommencer : toutes les étapes seront décochées et les minuteurs arrêtés.")) return;
+    const { servings } = session(); // les portions choisies sont conservées
     await sessions.resetSession(recipeId);
     await sessions.loadSession(recipeId, recipe.title);
+    if (servings) update((s) => ({ ...s, servings }));
     render();
   }
 

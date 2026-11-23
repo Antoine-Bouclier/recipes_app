@@ -1,6 +1,6 @@
 // Fiche d'une recette : portions ajustables (F-08), favori (F-09), suppression (F-05).
 import { Api } from "../api.js";
-import { formatQuantity, scaleQuantity } from "../cooking-state.js";
+import { formatQuantity, scaleQuantity, sessionServings, stepServings } from "../cooking-state.js";
 import { categoryLabel, clear, h, setTitle, toast } from "../dom.js";
 import * as sessions from "../sessions.js";
 import { humanDuration } from "../timers.js";
@@ -13,7 +13,8 @@ export function ingredientLine(i, from, to) {
 export async function detailView(root, { id }) {
   const recipe = await Api.getRecipe(id);
   setTitle(recipe.title);
-  let servings = recipe.servings;
+  // Portions : reprises de la session de cuisine si on les a déjà changées (F-08).
+  let servings = sessionServings(sessions.getLocal(recipe.id), recipe);
   const ingredientsList = h("ul", { class: "ingredients" });
   const servingsOut = h("output", { "aria-live": "polite" });
 
@@ -50,7 +51,14 @@ export async function detailView(root, { id }) {
     }
   }
 
-  const step = (delta) => () => { servings = Math.max(1, servings + delta); renderIngredients(); };
+  const step = (delta) => () => {
+    servings = stepServings(servings, delta);
+    // Mémorisé dans la session : le mode cuisine affichera les mêmes quantités.
+    sessions.updateSession(recipe.id, (s) => ({
+      ...s, title: recipe.title, servings: servings === recipe.servings ? null : servings,
+    }));
+    renderIngredients();
+  };
 
   root.append(
     h("p", {}, h("a", { href: "#/recettes" }, "← Mes recettes")),

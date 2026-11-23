@@ -32,7 +32,18 @@ export function progressLabel({ done, total }) {
 
 /** État vide d'une session de cuisine (F-16). */
 export function emptySession() {
-  return { checked_steps: [], checked_ingredients: [], timers: [], savedAt: Date.now() };
+  return { checked_steps: [], checked_ingredients: [], timers: [], servings: null, savedAt: Date.now() };
+}
+
+/** Portions à afficher : celles choisies pour cette session, sinon celles de la recette (F-08). */
+export function sessionServings(session, recipe) {
+  const n = session && Number(session.servings);
+  return n >= 1 ? n : recipe.servings;
+}
+
+/** Nouvelle valeur de portions après un appui sur − / + (entre 1 et 100). */
+export function stepServings(current, delta) {
+  return Math.min(100, Math.max(1, current + delta));
 }
 
 /**
