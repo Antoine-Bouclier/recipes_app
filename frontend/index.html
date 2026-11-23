@@ -1,0 +1,29 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Recettes</title>
+  <meta name="description" content="Vos recettes, avec étapes à cocher et minuteurs intégrés.">
+  <meta name="theme-color" content="#b4532a" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="{% static 'icons/icon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script type="module" src="{% static 'js/app.js' %}"></script>
+</head>
+<body>
+  <a class="skip-link" href="#app">Aller au contenu</a>
+  <header class="topbar">
+    <a class="brand" href="#/recettes"><span aria-hidden="true">🍲</span> Recettes</a>
+    <nav id="nav" aria-label="Navigation principale"></nav>
+  </header>
+  <main id="app" tabindex="-1">
+    <noscript>Cette application nécessite JavaScript.</noscript>
+  </main>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <aside id="timer-banner" class="timer-banner" aria-label="Minuteurs en cours"></aside>
+  <div id="timer-live" class="visually-hidden" role="alert"></div>
+</body>
+</html>

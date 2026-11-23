@@ -37,7 +37,7 @@ run_checks() {
 
   if command -v node >/dev/null 2>&1; then
     echo "==> Frontend : syntaxe JavaScript"
-    for f in "$ROOT"/frontend/sw.js "$ROOT"/frontend/static/js/*.js; do
+    for f in "$ROOT"/frontend/sw.js "$ROOT"/frontend/static/js/*.js "$ROOT"/frontend/static/js/views/*.js; do
       [ -f "$f" ] || continue
       node --check "$f" || { echo "Erreur de syntaxe : $f"; return 1; }
     done
@@ -57,8 +57,8 @@ STATUS=${PIPESTATUS[0]}
 BACK=$(grep -Eo '^Ran [0-9]+ tests?' "$LOG" | grep -Eo '[0-9]+' | tail -1)
 FRONT=$(grep -Eo '^ok [0-9]+ ' "$LOG" | wc -l | tr -d ' ')
 RESULT=$([ "$STATUS" -eq 0 ] && echo "✅ OK" || echo "❌ ÉCHEC")
-BRANCH=$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "-")
-BASE=$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo "-")
+BRANCH=$(git -C "$ROOT" symbolic-ref --short -q HEAD 2>/dev/null || echo "-")
+BASE=$(git -C "$ROOT" rev-parse -q --verify --short HEAD 2>/dev/null || echo "-")
 
 if [ ! -f "$HIST" ]; then
   cat > "$HIST" <<'HEAD'

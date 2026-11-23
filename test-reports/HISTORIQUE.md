@@ -7,5 +7,5 @@ testés s'appliquent. Le journal complet de chaque passage est dans
 
 | Date | Branche | Commit de base | Résultat | Tests backend | Tests frontend | Journal |
 | --- | --- | --- | --- | --- | --- | --- |
-| 23/11/2026 23:26 | HEAD
-- | - | ✅ OK | 18 | 18 | logs/2026-11-23_232552.log |
+| 23/11/2026 23:26 | master | - | ✅ OK | 18 | 18 | logs/2026-11-23_232552.log |
+| 23/11/2026 23:31 | master | f65eedf | ✅ OK | 18 | 18 | logs/2026-11-23_233130.log |
