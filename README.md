@@ -73,7 +73,8 @@ tests JavaScript (Node 15 ou plus). Chaque passage est tracé :
 - `test-reports/logs/` : le journal complet de chaque passage (local).
 
 Le hook Git `.githooks/pre-commit` lance ce script avant chaque commit et
-bloque le commit si un test échoue. À activer une fois par clone :
+bloque le commit si un test échoue. Il refuse aussi tout commit direct sur
+`main`. À activer une fois par clone :
 
 ```bash
 git config core.hooksPath .githooks
@@ -100,6 +101,12 @@ scripts/            check.sh (tests), backup.sh (sauvegarde)
 Makefile            commandes courantes (make help)
 test-reports/       historique des passages de tests
 ```
+
+## Branches
+
+`main` = production (tags `v1.0.0`…), `dev` = intégration, et une branche par
+tâche (`feature/…`, `fix/…`, `docs/…`, `hotfix/…`) fusionnée par Pull Request.
+Détail : [docs/developpement.md](docs/developpement.md#branches-et-versions).
 
 ## Documentation
 
