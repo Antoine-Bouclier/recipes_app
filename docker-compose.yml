@@ -1,0 +1,38 @@
+# Lancement complet : docker compose up --build  ->  http://localhost:8000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-recettes}
+      POSTGRES_USER: ${POSTGRES_USER:-recettes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recettes}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-recettes} -d ${POSTGRES_DB:-recettes}"]
+      interval: 5s
+      retries: 10
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-recettes}:${POSTGRES_PASSWORD:-recettes}@db:5432/${POSTGRES_DB:-recettes}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-0}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-dot-env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO_HTTPS: ${DJANGO_HTTPS:-0}
+      DJANGO_SERVE_MEDIA: ${DJANGO_SERVE_MEDIA:-1}
+    ports:
+      - "8000:8000"
+    volumes:
+      - media:/app/media
+
+volumes:
+  pgdata:
+  media:

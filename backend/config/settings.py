@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # fichiers statiques en production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -91,7 +92,11 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [FRONTEND_DIR / "static"]
-STATIC_ROOT = REPO_DIR / "staticfiles"
+STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", REPO_DIR / "staticfiles"))
+
+# Photos : servies par Django si DJANGO_SERVE_MEDIA=1 (petite installation) ;
+# sinon par le serveur web frontal ou un stockage objet (voir docs/deploiement.md).
+SERVE_MEDIA = env_bool("DJANGO_SERVE_MEDIA", DEBUG)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", REPO_DIR / "media"))
@@ -109,10 +114,11 @@ REST_FRAMEWORK = {
     + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
 }
 
-# NF-08 : en production, tout passe en HTTPS.
-if not DEBUG:
+# NF-08 : en production, tout passe en HTTPS. DJANGO_HTTPS=0 permet de tester
+# l'image de production en local sur http://localhost.
+if not DEBUG and env_bool("DJANGO_HTTPS", True):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
+    SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30

@@ -17,3 +17,4 @@ staticfiles/
 .idea/
 .DS_Store
 test-reports/logs/
+backups/

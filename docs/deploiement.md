@@ -1,0 +1,79 @@
+# Déploiement
+
+## Image Docker
+
+Le `Dockerfile` produit une image unique : Django servi par Gunicorn, fichiers
+statiques servis par WhiteNoise. Au démarrage, le conteneur applique les
+migrations.
+
+```bash
+cp .env.example .env
+# éditer .env : DJANGO_SECRET_KEY, DJANGO_ALLOWED_HOSTS, mots de passe PostgreSQL
+docker compose up --build -d
+```
+
+Générer une clé secrète :
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+## Mise en production (HTTPS, NF-08)
+
+Placer un proxy HTTPS (Caddy, Nginx, Traefik ou celui de l'hébergeur) devant le
+port 8000, qui transmet l'en-tête `X-Forwarded-Proto`. Dans `.env` :
+
+```
+DJANGO_DEBUG=0
+DJANGO_HTTPS=1
+DJANGO_ALLOWED_HOSTS=recettes.example.fr
+DJANGO_CSRF_TRUSTED_ORIGINS=https://recettes.example.fr
+```
+
+Exemple minimal avec Caddy (certificat automatique) :
+
+```
+recettes.example.fr {
+    reverse_proxy localhost:8000
+}
+```
+
+Le cahier des charges demande un **hébergeur en Europe** (RGPD).
+
+Vérification : `docker compose exec web python manage.py check --deploy`.
+
+## Photos
+
+Par défaut (`DJANGO_SERVE_MEDIA=1`), Django sert lui-même les photos depuis le
+volume `media`. C'est suffisant pour un usage personnel. Pour plus de trafic :
+les faire servir par le proxy, ou passer à un stockage objet de type S3
+(`django-storages`), comme le propose le cahier des charges.
+
+## Sauvegardes (NF-10)
+
+`scripts/backup.sh` fait un `pg_dump` compressé dans `backups/` et supprime les
+fichiers de plus de 30 jours. Le planifier chaque jour :
+
+```
+0 3 * * * cd /chemin/recipes_app && ./scripts/backup.sh >> backups/backup.log 2>&1
+```
+
+Restauration :
+
+```bash
+gunzip -c backups/recettes-AAAA-MM-JJ_HHMM.sql.gz | docker compose exec -T db psql -U recettes recettes
+```
+
+Penser à sauvegarder aussi le volume `media` (photos) et à copier `backups/`
+hors du serveur.
+
+## Mise à jour
+
+```bash
+git pull
+./scripts/check.sh
+docker compose up --build -d
+```
+
+Si `frontend/` a changé, vérifier que `VERSION` a été incrémenté dans
+`frontend/sw.js`, sinon les utilisateurs garderont l'ancienne interface en cache.
