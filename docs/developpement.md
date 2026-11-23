@@ -2,18 +2,33 @@
 
 ## Installation
 
-Prérequis : Python 3.8 ou plus, Node 15 ou plus (pour les tests JavaScript),
-Docker (facultatif, pour PostgreSQL).
+Prérequis : Python 3.8 ou plus, `make`, Node 15 ou plus (pour les tests
+JavaScript), Docker (pour lancer l'application comme en production).
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r backend/requirements.txt
-git config core.hooksPath .githooks        # tests automatiques avant chaque commit
-cd backend
-../.venv/bin/python manage.py migrate
-../.venv/bin/python manage.py createsuperuser   # facultatif : accès à /admin/
-../.venv/bin/python manage.py runserver
+make install      # .venv, dépendances, hook de tests, .env
+make dev          # serveur local SQLite → http://127.0.0.1:8001
+make superuser    # facultatif : accès à /admin/
 ```
+
+`make help` liste toutes les commandes. Sans `make`, voir les commandes
+équivalentes dans le `Makefile` (chaque cible est courte et lisible).
+
+## Lancer et relancer l'application
+
+| Besoin | Commande |
+| --- | --- |
+| Coder avec rechargement automatique (Python, JS, CSS) | `make dev` (Ctrl+C pour arrêter) |
+| Voir l'application comme en production (PostgreSQL, Gunicorn) | `make up` → http://localhost:8000 |
+| Après une modification du code, mettre à jour la version Docker | `make restart` |
+| Après une modification de `requirements.txt` ou du `Dockerfile` | `make rebuild` |
+| Comprendre une erreur côté serveur | `make logs` |
+| Tout arrêter | `make down` (les données restent dans les volumes Docker) |
+
+En `make dev`, Django recharge le Python tout seul ; pour le JS et le CSS il
+suffit de recharger la page (voir plus bas pour le cache du service worker).
+La version Docker, elle, embarque une copie du code : il faut `make restart`
+pour qu'elle prenne les modifications.
 
 Pour développer sur PostgreSQL plutôt que SQLite :
 
@@ -40,7 +55,7 @@ Voir `.env.example`. Les principales :
 ## Tests
 
 ```bash
-./scripts/check.sh                                  # tout, avec trace
+make test                                           # tout, avec trace (= ./scripts/check.sh)
 cd backend && ../.venv/bin/python manage.py test recipes   # une app
 cd frontend && node tests/timers.test.mjs            # un fichier JS
 ```
@@ -56,7 +71,7 @@ Le détail (et la recette manuelle sur téléphone) est dans [tests.md](tests.md
 
 ## Règles de commit
 
-1. `./scripts/check.sh` doit être vert : le hook `pre-commit` le lance et
+1. `make test` doit être vert : le hook `pre-commit` le lance et
    bloque le commit sinon. Il ajoute aussi une ligne à
    `test-reports/HISTORIQUE.md`, incluse dans le commit.
 2. Un commit = une étape cohérente (une fonctionnalité, une correction).
@@ -71,8 +86,8 @@ Ne jamais contourner le hook (`--no-verify`) : si un test échoue, on corrige.
 ### Ajouter un champ à une recette
 
 1. `backend/recipes/models.py` : ajouter le champ.
-2. `../.venv/bin/python manage.py makemigrations recipes` (le script de test
-   échoue tant qu'une migration manque).
+2. `cd backend && ../.venv/bin/python manage.py makemigrations recipes`, puis
+   `make migrate` (`make test` échoue tant qu'une migration manque).
 3. `backend/recipes/serializers.py` : l'ajouter dans `fields` de
    `RecipeSerializer` (et `RecipeListSerializer` si utile dans la liste).
 4. `frontend/static/js/views/edit.js` (formulaire) et `detail.js` (affichage).

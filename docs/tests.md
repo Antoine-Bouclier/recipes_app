@@ -3,7 +3,7 @@
 ## Lancer les tests
 
 ```bash
-./scripts/check.sh
+make test        # équivalent : ./scripts/check.sh
 ```
 
 Exécute dans l'ordre :

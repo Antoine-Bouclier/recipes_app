@@ -19,32 +19,51 @@ et une recette déjà ouverte reste utilisable sans connexion.
 
 ## Démarrage rapide
 
-### Avec Docker (recommandé)
+Toutes les commandes courantes passent par le `Makefile` ; `make` seul affiche
+la liste.
 
 ```bash
-cp .env.example .env        # puis adapter DJANGO_SECRET_KEY
-docker compose up --build
+make install    # une seule fois : dépendances Python, hook de tests, fichier .env
+make up         # démarre l'application avec Docker  →  http://localhost:8000
 ```
 
-Ouvrir http://localhost:8000 et créer un compte.
+Puis créer un compte dans l'application.
 
-### Sans Docker (développement)
+### Commandes du Makefile
+
+| Commande | Effet |
+| --- | --- |
+| `make install` | Crée `.venv`, installe les dépendances, active le hook de tests, crée `.env` depuis `.env.example` |
+| `make up` | Démarre l'application avec Docker et PostgreSQL, en arrière-plan → http://localhost:8000 |
+| `make restart` | **Relance** l'application en prenant en compte le code modifié (reconstruit l'image) |
+| `make down` | Arrête l'application (les données sont conservées) |
+| `make rebuild` | Reconstruit l'image sans cache puis relance tout (en cas de souci de dépendances) |
+| `make logs` | Suit les logs de l'application |
+| `make ps` | État des conteneurs |
+| `make dev` | Serveur de développement **local** (SQLite, rechargement automatique) → http://127.0.0.1:8001 |
+| `make migrate` | Applique les migrations sur la base locale |
+| `make superuser` | Crée un compte administrateur (base locale, pour `/admin/`) |
+| `make test` | Lance la suite de tests complète, avec trace |
+| `make shell` / `make dbshell` | Shell Django / console PostgreSQL dans Docker |
+| `make backup` | Sauvegarde la base PostgreSQL dans `backups/` |
+| `make clean` | Supprime les fichiers générés |
+
+`make dev` et `make up` peuvent tourner en même temps (ports 8001 et 8000).
+Autre port local : `make dev PORT=9000`.
+
+### Sans make
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r backend/requirements.txt
-cd backend
-../.venv/bin/python manage.py migrate
-../.venv/bin/python manage.py runserver
+cp .env.example .env && docker compose up --build        # Docker
+# ou, en local :
+python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
+cd backend && ../.venv/bin/python manage.py migrate && ../.venv/bin/python manage.py runserver
 ```
-
-Ouvrir http://127.0.0.1:8000. La base est un fichier SQLite (`backend/db.sqlite3`).
-Pour l'administration Django (`/admin/`) : `../.venv/bin/python manage.py createsuperuser`.
 
 ## Tests
 
 ```bash
-./scripts/check.sh
+make test       # équivalent : ./scripts/check.sh
 ```
 
 Lance toute la suite : vérifications Django, migrations, tests de l'API et
@@ -78,6 +97,7 @@ frontend/           interface (servie par Django)
   tests/            tests JavaScript (Node)
 docs/               documentation
 scripts/            check.sh (tests), backup.sh (sauvegarde)
+Makefile            commandes courantes (make help)
 test-reports/       historique des passages de tests
 ```
 

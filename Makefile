@@ -1,0 +1,83 @@
+# Commandes courantes du projet. `make` (ou `make help`) affiche la liste.
+#
+# Deux façons de lancer l'application :
+#   - Docker (PostgreSQL, comme en production) : make up / make restart / make down
+#   - Local (SQLite, rechargement automatique du code) : make dev
+
+PYTHON   ?= .venv/bin/python
+PIP      ?= .venv/bin/pip
+MANAGE    = cd backend && ../$(PYTHON) manage.py
+COMPOSE  ?= docker compose
+PORT     ?= 8001
+
+.DEFAULT_GOAL := help
+.PHONY: help install dev migrate superuser test \
+        up down restart rebuild logs ps shell dbshell backup clean
+
+help: ## Affiche cette aide
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[1m%-10s\033[0m %s\n", $$1, $$2}'
+
+# ---------------------------------------------------------------- Local ----
+
+.venv:
+	@python3 -m venv .venv
+
+install: .venv ## Installe les dépendances et active le hook de tests
+	@$(PIP) install -q --upgrade pip
+	@$(PIP) install -q -r backend/requirements.txt
+	@git config core.hooksPath .githooks
+	@[ -f .env ] || cp .env.example .env
+	@echo "Installation terminée. Lancer : make dev (local) ou make up (Docker)."
+
+dev: migrate ## Lance le serveur local (SQLite) sur le port 8001 (modifiable : make dev PORT=9000)
+	@echo "→ http://127.0.0.1:$(PORT)  (Ctrl+C pour arrêter)"
+	@$(MANAGE) runserver 127.0.0.1:$(PORT)
+
+migrate: ## Applique les migrations (base locale)
+	@$(MANAGE) migrate
+
+superuser: ## Crée un compte administrateur (base locale)
+	@$(MANAGE) createsuperuser
+
+test: ## Lance la suite de tests complète (avec trace dans test-reports/)
+	@./scripts/check.sh
+
+# --------------------------------------------------------------- Docker ----
+
+up: ## Démarre l'application avec Docker (PostgreSQL) en arrière-plan
+	@[ -f .env ] || cp .env.example .env
+	@$(COMPOSE) up --build -d
+	@echo "→ http://localhost:8000"
+
+down: ## Arrête l'application Docker (les données sont conservées)
+	@$(COMPOSE) down
+
+restart: ## Relance l'application Docker en prenant en compte le code modifié
+	@$(COMPOSE) up --build -d --force-recreate web
+	@echo "→ http://localhost:8000"
+
+rebuild: ## Reconstruit l'image sans cache puis relance tout
+	@$(COMPOSE) build --no-cache
+	@$(COMPOSE) up -d --force-recreate
+	@echo "→ http://localhost:8000"
+
+logs: ## Affiche les logs de l'application (Ctrl+C pour quitter)
+	@$(COMPOSE) logs -f --tail 100 web
+
+ps: ## État des conteneurs
+	@$(COMPOSE) ps
+
+shell: ## Shell Django dans le conteneur
+	@$(COMPOSE) exec web python manage.py shell
+
+dbshell: ## Console PostgreSQL
+	@$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" "$$POSTGRES_DB"'
+
+backup: ## Sauvegarde la base PostgreSQL dans backups/
+	@./scripts/backup.sh
+
+# ------------------------------------------------------------- Nettoyage ----
+
+clean: ## Supprime les fichiers générés (caches Python, statiques collectés)
+	@find . -path ./.venv -prune -o -name __pycache__ -type d -exec rm -r {} +
+	@rm -rf staticfiles
