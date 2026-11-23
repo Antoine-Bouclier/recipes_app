@@ -1,0 +1,9 @@
+{
+  "name": "recettes-frontend",
+  "private": true,
+  "type": "module",
+  "description": "Interface de l'application de recettes (JavaScript sans framework, sans étape de build).",
+  "scripts": {
+    "test": "for t in tests/*.test.mjs; do node \"$t\" || exit 1; done"
+  }
+}

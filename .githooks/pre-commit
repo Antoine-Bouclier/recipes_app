@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Lance la suite de tests complète avant chaque commit et bloque le commit si
+# elle échoue. L'historique des passages est ajouté au commit.
+# Activation (une fois par clone) : git config core.hooksPath .githooks
+ROOT="$(git rev-parse --show-toplevel)"
+"$ROOT/scripts/check.sh"
+STATUS=$?
+git -C "$ROOT" add test-reports/HISTORIQUE.md
+exit $STATUS
