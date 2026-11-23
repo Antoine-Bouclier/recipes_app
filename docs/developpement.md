@@ -69,6 +69,12 @@ Voir `.env.example`. Les principales :
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Noms de domaine acceptés |
 | `DJANGO_HTTPS` | `1` | En production : redirection HTTPS, cookies sécurisés, HSTS |
 | `DJANGO_SERVE_MEDIA` | = `DEBUG` | Django sert les photos |
+| `DJANGO_TRUSTED_PROXY_COUNT` | `0` | Proxys HTTPS devant Django (vraie IP des visiteurs) |
+| `DJANGO_LOGIN_FAILURE_LIMIT` / `DJANGO_LOGIN_COOLOFF_MINUTES` | `5` / `15` | Blocage après échecs de connexion |
+| `DJANGO_LOGIN_RATE` / `DJANGO_REGISTER_RATE` | `30/minute` / `20/hour` | Limites par adresse IP |
+
+Un compte bloqué pendant les tests : `make unlock` (Docker) ou
+`cd backend && ../.venv/bin/python manage.py axes_reset` (local).
 
 ## Tests
 

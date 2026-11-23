@@ -14,7 +14,7 @@ PORT     ?= 8001
 
 .DEFAULT_GOAL := help
 .PHONY: help install dev migrate superuser test seed seed-docker unseed \
-        e2e e2e-install up down restart rebuild logs ps shell dbshell backup clean
+        e2e e2e-install up down restart rebuild logs ps shell dbshell unlock backup clean
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[1m%-10s\033[0m %s\n", $$1, $$2}'
@@ -39,6 +39,7 @@ dev: migrate ## Lance le serveur local (SQLite) sur le port 8001 (modifiable : m
 
 migrate: ## Applique les migrations (base locale)
 	@$(MANAGE) migrate
+	@$(MANAGE) createcachetable
 
 superuser: ## Crée un compte administrateur (base locale)
 	@$(MANAGE) createsuperuser
@@ -94,6 +95,9 @@ dbshell: ## Console PostgreSQL
 
 seed-docker: ## Comptes et recettes de démo dans la base Docker
 	@$(COMPOSE) exec web python manage.py seed_demo
+
+unlock: ## Débloque les comptes bloqués après trop d'échecs de connexion (Docker)
+	@$(COMPOSE) exec web python manage.py axes_reset
 
 backup: ## Sauvegarde la base PostgreSQL dans backups/
 	@./scripts/backup.sh

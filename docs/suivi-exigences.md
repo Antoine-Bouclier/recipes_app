@@ -63,7 +63,7 @@ est dans [tests.md](tests.md#bout-en-bout-e2erunjs).
 | NF-05 Hors ligne (PWA) | ✅ | `sw.js` + localStorage ; testé par `make e2e` (scénario 8) |
 | NF-06 Navigateurs récents | 🟡 | testé sur Chrome ; Safari, Firefox et Edge à vérifier |
 | NF-07 Accessibilité WCAG 2.1 AA | 🟡 | labels, `aria-live`, focus visible, contrastes ; audit complet à faire |
-| NF-08 Sécurité | ✅ | HTTPS via `DJANGO_HTTPS`, mots de passe hachés, isolation par utilisateur (tests B et `make e2e` scénario 10) |
+| NF-08 Sécurité | ✅ | HTTPS via `DJANGO_HTTPS`, mots de passe hachés, isolation par utilisateur (tests B et `make e2e` scénario 10), blocage après 5 échecs de connexion et limites de débit (`accounts/security.py`) |
 | NF-09 RGPD : export et suppression | ✅ | `/api/auth/export/`, `DELETE /api/auth/me/` ; tests B et `make e2e` scénario 12 |
 | NF-10 Sauvegarde quotidienne 30 jours | 🟡 | `scripts/backup.sh` prêt ; cron à installer sur le serveur |
 | NF-11 Interface en français | ✅ | |

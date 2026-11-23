@@ -1,32 +1,54 @@
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import SimpleRateThrottle
 
 from recipes.serializers import RecipeSerializer
 
 from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
 
+MODEL_BACKEND = "django.contrib.auth.backends.ModelBackend"
+
+
+class IPRateThrottle(SimpleRateThrottle):
+    """Limite par adresse IP ; le débit est lu dans DEFAULT_THROTTLE_RATES[scope]."""
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {"scope": self.scope, "ident": self.get_ident(request)}
+
+
+class RegisterThrottle(IPRateThrottle):
+    scope = "register"
+
+
+class LoginThrottle(IPRateThrottle):
+    scope = "login"
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([RegisterThrottle])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
-    login(request, user)
+    login(request, user, backend=MODEL_BACKEND)
     return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([LoginThrottle])
 def login_view(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    # On passe la requête Django d'origine (et non l'enveloppe DRF) : django-axes y
+    # note le blocage, relu ensuite par son middleware (accounts/security.py).
     user = authenticate(
-        request,
+        request._request,
         email=serializer.validated_data["email"].lower(),
         password=serializer.validated_data["password"],
     )

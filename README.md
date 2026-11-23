@@ -61,6 +61,7 @@ s'exécuter en production.
 | `make e2e-install` | Installe les dépendances des tests navigateur (une fois) |
 | `make e2e` | Tests de bout en bout dans Chrome, contre l'application lancée |
 | `make shell` / `make dbshell` | Shell Django / console PostgreSQL dans Docker |
+| `make unlock` | Débloque les comptes bloqués après trop d'échecs de connexion |
 | `make backup` | Sauvegarde la base PostgreSQL dans `backups/` |
 | `make clean` | Supprime les fichiers générés |
 

@@ -55,7 +55,8 @@ class SeedDemoTests(TestCase):
     def test_demo_accounts_only_see_their_recipes(self):  # NF-08
         seed()
         client = APIClient()
-        self.assertTrue(client.login(email="demo@recettes.local", password=DEMO_PASSWORD))
+        r = client.post("/api/auth/login/", {"email": "demo@recettes.local", "password": DEMO_PASSWORD})
+        self.assertEqual(r.status_code, 200)
         titles = [r["title"] for r in client.get("/api/recipes/").data]
         self.assertNotIn("Gratin dauphinois", titles)
         self.assertIn("Spaghetti à la bolognaise", titles)

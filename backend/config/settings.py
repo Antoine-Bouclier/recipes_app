@@ -6,6 +6,7 @@ au développement local uniquement.
 """
 import os
 import warnings
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "axes",
     "accounts",
     "recipes",
     "cooking",
@@ -49,6 +51,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "axes.middleware.AxesMiddleware",  # doit rester en dernier
+]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",  # bloque après trop d'échecs (accounts/security.py)
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -78,6 +86,22 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
+
+# Cache partagé entre les processus Gunicorn (compteurs des limites de débit).
+# Table créée par `manage.py createcachetable` (make migrate, démarrage Docker).
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache"}}
+
+# --- Protection de la connexion (NF-08, accounts/security.py) ---
+# Nombre de proxys de confiance devant Django (1 derrière Caddy/Nginx, 0 sinon).
+TRUSTED_PROXY_COUNT = int(os.environ.get("DJANGO_TRUSTED_PROXY_COUNT", "0"))
+AXES_FAILURE_LIMIT = int(os.environ.get("DJANGO_LOGIN_FAILURE_LIMIT", "5"))
+AXES_COOLOFF_TIME = timedelta(minutes=int(os.environ.get("DJANGO_LOGIN_COOLOFF_MINUTES", "15")))
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_USERNAME_FORM_FIELD = "email"
+AXES_RESET_ON_SUCCESS = True
+AXES_CLIENT_IP_CALLABLE = "accounts.security.client_ip"
+AXES_LOCKOUT_CALLABLE = "accounts.security.lockout_response"
+AXES_VERBOSE = False
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -117,6 +141,12 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"]
     + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
+    # Limites par adresse IP sur les routes sensibles (ScopedRateThrottle).
+    "DEFAULT_THROTTLE_RATES": {
+        "login": os.environ.get("DJANGO_LOGIN_RATE", "30/minute"),
+        "register": os.environ.get("DJANGO_REGISTER_RATE", "20/hour"),
+    },
+    "NUM_PROXIES": TRUSTED_PROXY_COUNT,
 }
 
 # NF-08 : en production, tout passe en HTTPS. DJANGO_HTTPS=0 permet de tester

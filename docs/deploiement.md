@@ -30,7 +30,16 @@ DJANGO_DEBUG=0
 DJANGO_HTTPS=1
 DJANGO_ALLOWED_HOSTS=recettes.example.fr
 DJANGO_CSRF_TRUSTED_ORIGINS=https://recettes.example.fr
+DJANGO_TRUSTED_PROXY_COUNT=1
 ```
+
+`DJANGO_TRUSTED_PROXY_COUNT=1` est **indispensable** derrière un proxy : sans
+lui, tous les visiteurs ont l'adresse IP du proxy, et le blocage après échecs
+de connexion ainsi que les limites de débit s'appliqueraient à tout le monde à
+la fois. Ne pas le mettre sans proxy : l'en-tête `X-Forwarded-For` serait
+falsifiable.
+
+Débloquer un utilisateur bloqué après trop d'échecs : `make unlock`.
 
 Exemple minimal avec Caddy (certificat automatique) :
 

@@ -20,3 +20,4 @@ testés s'appliquent. Le journal complet de chaque passage est dans
 | 24/11/2026 00:36 | fix/portions-mode-cuisine | 489c50b | ✅ OK | 26 | 19 | logs/2026-11-24_003557.log |
 | 24/11/2026 00:37 | fix/portions-mode-cuisine | 489c50b | ✅ OK | 26 | 19 | logs/2026-11-24_003713.log |
 | 24/11/2026 00:41 | feature/photos-redimensionnees | 0951bad | ✅ OK | 32 | 19 | logs/2026-11-24_004046.log |
+| 24/11/2026 00:51 | feature/securite-connexion | 873e5a4 | ✅ OK | 40 | 19 | logs/2026-11-24_005107.log |

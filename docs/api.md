@@ -8,6 +8,12 @@ cookie `csrftoken` (posé par la page d'accueil).
 Sauf mention contraire, une route exige d'être connecté (sinon `403`). Une
 ressource d'un autre utilisateur répond `404`.
 
+Réponse `429` (avec `detail` en français) :
+- connexion : après 5 échecs pour un même e-mail depuis une même adresse IP,
+  blocage de 15 minutes ; ou plus de 30 tentatives par minute depuis une IP ;
+- inscription : plus de 20 comptes par heure depuis une même IP.
+Ces valeurs se règlent par variables d'environnement (voir `.env.example`).
+
 En développement (`DJANGO_DEBUG=1`), l'API est explorable dans le navigateur :
 http://127.0.0.1:8000/api/
 
