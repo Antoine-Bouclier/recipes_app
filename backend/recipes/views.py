@@ -38,8 +38,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def perform_destroy(self, instance):
-        if instance.photo:
-            instance.photo.delete(save=False)
+        instance.delete_photo()
         instance.delete()
 
     @action(detail=True, methods=["post", "delete"], parser_classes=[MultiPartParser, FormParser])
@@ -47,13 +46,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """POST (multipart, champ `photo`) : ajoute/remplace la photo. DELETE : la retire."""
         recipe = self.get_object()
         if request.method == "DELETE":
-            if recipe.photo:
-                recipe.photo.delete(save=False)
-                recipe.save(update_fields=["photo", "updated_at"])
+            if recipe.photo or recipe.photo_thumb:
+                recipe.delete_photo()
+                recipe.save(update_fields=["photo", "photo_thumb", "updated_at"])
             return Response(status=status.HTTP_204_NO_CONTENT)
-        serializer = PhotoSerializer(recipe, data=request.data, context={"request": request})
+        serializer = PhotoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if recipe.photo:
-            recipe.photo.delete(save=False)
-        serializer.save()
-        return Response(serializer.data)
+        serializer.save(recipe)
+        data = RecipeSerializer(recipe, context={"request": request}).data
+        return Response({"photo": data["photo"], "photo_thumb": data["photo_thumb"]})

@@ -32,7 +32,7 @@ http://127.0.0.1:8000/api/
 | PATCH | `/recipes/:id/` | Modifie les champs envoyés |
 | PUT | `/recipes/:id/` | Remplace la recette |
 | DELETE | `/recipes/:id/` | Supprime la recette, sa photo et ses sessions |
-| POST | `/recipes/:id/photo/` | Multipart, champ `photo` : ajoute ou remplace la photo |
+| POST | `/recipes/:id/photo/` | Multipart, champ `photo` : ajoute ou remplace la photo ; renvoie `{photo, photo_thumb}` |
 | DELETE | `/recipes/:id/photo/` | Retire la photo |
 
 Filtres de la liste (cumulables) :
@@ -51,7 +51,8 @@ Recette complète :
   "id": 1,
   "title": "Pâtes bolognaise",
   "description": "",
-  "photo": "http://…/media/recipes/2026/11/x.jpg",
+  "photo": "http://…/media/recipes/2026/11/3f2a….jpg",
+  "photo_thumb": "http://…/media/recipes/2026/11/3f2a…-mini.jpg",
   "servings": 4,
   "prep_minutes": 15,
   "cook_minutes": 40,
@@ -76,6 +77,13 @@ Règles d'écriture :
   sont créés). Omettre la clé laisse la liste inchangée.
 - `quantity` est facultative (`null`) ; `timer_seconds` à `0` ou `null` = pas de minuteur.
 - `tags` : liste de textes, mis en minuscules, doublons retirés.
+
+Photos (`backend/recipes/images.py`) : JPEG, PNG, WebP ou GIF (l'iPhone convertit
+lui-même ses photos HEIC en JPEG à l'envoi), 15 Mo maximum. À l'envoi, la photo est
+redressée selon son orientation, débarrassée de ses métadonnées (dont la
+position GPS), convertie en JPEG de 1600 px de côté maximum, et une miniature
+de 600 px (`photo_thumb`) est créée pour la liste. Les fichiers sont supprimés
+avec la photo, la recette ou le compte.
 
 ## Session de cuisine — `cooking/`
 

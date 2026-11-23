@@ -45,7 +45,7 @@ porte donc la trace des tests qui l'ont validé.
 | Fichier | Couvre |
 | --- | --- |
 | `accounts/tests/test_auth.py` | inscription, mot de passe haché, doublons, connexion/déconnexion, export et suppression du compte (NF-08, NF-09) |
-| `recipes/tests/test_api.py` | création avec ingrédients/étapes, réordonnancement, modification, suppression, recherche, filtres, isolation entre utilisateurs, photo (F-01 à F-09, NF-08) |
+| `recipes/tests/test_api.py` | création avec ingrédients/étapes, réordonnancement, modification, suppression, recherche, filtres, isolation entre utilisateurs (F-01 à F-09, NF-08) ; photos : redimensionnement, rotation, suppression des métadonnées GPS, transparence, taille maximale, miniature, suppression des fichiers |
 | `cooking/tests/test_session.py` | sauvegarde et relecture de l'avancement, validation des minuteurs, réinitialisation, isolation (F-15, F-16, F-25) |
 | `recipes/tests/test_seed_demo.py` | données de démo : création, validité, toutes les catégories, relance sans doublon, autres comptes intacts, refus en production |
 
@@ -72,9 +72,9 @@ CHROME_PATH=/chemin/chrome make e2e           # autre navigateur Chromium
 | # | Scénario | Exigences |
 | --- | --- | --- |
 | 1 | Inscription, arrivée sur « Mes recettes » | NF-08 |
-| 2 | Création d'une recette, ingrédients, étapes, réordonnancement | F-01 à F-04 |
+| 2 | Création d'une recette avec photo (vérifiée en 1600 px), ingrédients, étapes, réordonnancement | F-01 à F-04 |
 | 3 | Portions ajustées, favori | F-08, F-09 |
-| 4 | Recherche par ingrédient, catégorie, favoris, étiquette | F-06, F-07, F-09 |
+| 4 | Recherche par ingrédient, catégorie, favoris, étiquette ; miniature dans la liste | F-06, F-07, F-09, NF-03 |
 | 5 | Mode cuisine : ingrédients au-dessus, étape cochée, « Annuler », barre repliée | F-10 à F-12, F-14 |
 | 6 | Minuteur lancé, conservé au rechargement, terminé, « Cocher l'étape » | F-15, F-20 à F-25, F-27 |
 | 7 | Avancement présent côté serveur | F-15 |

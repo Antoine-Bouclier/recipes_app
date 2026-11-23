@@ -1,6 +1,8 @@
 import shutil
 import tempfile
 from io import BytesIO
+from pathlib import Path
+from unittest.mock import patch
 
 from django.test import override_settings
 from PIL import Image
@@ -99,30 +101,91 @@ class PhotoTests(APITestCase):
         self.user = User.objects.create_user("ana@ex.com", "Sel-poivre-42")
         self.client.force_authenticate(self.user)
         self.recipe = Recipe.objects.create(owner=self.user, title="Crêpes")
+        self.url = f"/api/recipes/{self.recipe.id}/photo/"
 
     def tearDown(self):
         self.override.disable()
         shutil.rmtree(self.media, ignore_errors=True)
 
-    def png(self):
+    def image(self, size=(4, 4), fmt="PNG", mode="RGB", exif=None, name="crepes.png"):
         buf = BytesIO()
-        Image.new("RGB", (4, 4), "red").save(buf, "PNG")
-        buf.name = "crepes.png"
+        img = Image.new(mode, size, (200, 30, 30, 0) if mode == "RGBA" else "red")
+        img.save(buf, fmt, **({"exif": exif} if exif else {}))
+        buf.name = name
         buf.seek(0)
         return buf
 
+    def files_on_disk(self):
+        return sorted(str(p.relative_to(self.media)) for p in Path(self.media).rglob("*") if p.is_file())
+
     def test_upload_and_remove_photo(self):  # F-01 (photo facultative)
-        url = f"/api/recipes/{self.recipe.id}/photo/"
-        r = self.client.post(url, {"photo": self.png()}, format="multipart")
+        r = self.client.post(self.url, {"photo": self.image()}, format="multipart")
         self.assertEqual(r.status_code, 200, r.data)
         self.recipe.refresh_from_db()
-        self.assertTrue(self.recipe.photo)
-        self.assertEqual(self.client.delete(url).status_code, 204)
+        self.assertTrue(self.recipe.photo.name.endswith(".jpg"))
+        self.assertTrue(self.recipe.photo_thumb.name.endswith("-mini.jpg"))
+        self.assertEqual(len(self.files_on_disk()), 2)
+        self.assertEqual(self.client.delete(self.url).status_code, 204)
         self.recipe.refresh_from_db()
         self.assertFalse(self.recipe.photo)
+        self.assertFalse(self.recipe.photo_thumb)
+        self.assertEqual(self.files_on_disk(), [])
+
+    def test_large_photo_is_resized_rotated_and_stripped(self):  # §7 : images redimensionnées, RGPD
+        exif = Image.Exif()
+        exif[0x0112] = 6  # orientation : rotation de 90°
+        exif[0x8825] = {2: (48.0, 51.0, 24.0)}  # coordonnées GPS
+        upload = self.image(size=(3000, 2000), fmt="JPEG", exif=exif.tobytes(), name="photo.jpg")
+        r = self.client.post(self.url, {"photo": upload}, format="multipart")
+        self.assertEqual(r.status_code, 200, r.data)
+        self.recipe.refresh_from_db()
+        with Image.open(self.recipe.photo.path) as photo:
+            self.assertEqual(photo.format, "JPEG")
+            self.assertEqual(photo.size, (1067, 1600))  # portrait après rotation, ≤ 1600 px
+            self.assertEqual(len(photo.getexif()), 0)  # plus aucune métadonnée (GPS…)
+        with Image.open(self.recipe.photo_thumb.path) as thumb:
+            self.assertEqual(max(thumb.size), 600)
+
+    def test_transparent_png_gets_white_background(self):
+        r = self.client.post(self.url, {"photo": self.image(mode="RGBA")}, format="multipart")
+        self.assertEqual(r.status_code, 200, r.data)
+        self.recipe.refresh_from_db()
+        with Image.open(self.recipe.photo.path) as photo:
+            self.assertEqual(photo.mode, "RGB")
+            self.assertEqual(photo.getpixel((0, 0)), (255, 255, 255))
+
+    def test_replacing_photo_deletes_old_files(self):
+        self.client.post(self.url, {"photo": self.image()}, format="multipart")
+        first = self.files_on_disk()
+        self.client.post(self.url, {"photo": self.image()}, format="multipart")
+        second = self.files_on_disk()
+        self.assertEqual(len(second), 2)
+        self.assertFalse(set(first) & set(second))
+
+    def test_deleting_recipe_or_account_deletes_files(self):
+        self.client.post(self.url, {"photo": self.image()}, format="multipart")
+        self.client.delete(f"/api/recipes/{self.recipe.id}/")
+        self.assertEqual(self.files_on_disk(), [])
+        other = Recipe.objects.create(owner=self.user, title="Gaufres")
+        self.client.post(f"/api/recipes/{other.id}/photo/", {"photo": self.image()}, format="multipart")
+        self.assertEqual(len(self.files_on_disk()), 2)
+        r = self.client.delete("/api/auth/me/", {"password": "Sel-poivre-42"})
+        self.assertEqual(r.status_code, 204)
+        self.assertEqual(self.files_on_disk(), [])
 
     def test_rejects_non_image(self):
         buf = BytesIO(b"not an image")
         buf.name = "x.png"
-        r = self.client.post(f"/api/recipes/{self.recipe.id}/photo/", {"photo": buf}, format="multipart")
+        r = self.client.post(self.url, {"photo": buf}, format="multipart")
         self.assertEqual(r.status_code, 400)
+
+    def test_rejects_too_heavy_file(self):
+        with patch("recipes.images.MAX_UPLOAD_BYTES", 10):
+            r = self.client.post(self.url, {"photo": self.image()}, format="multipart")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("trop lourde", str(r.data))
+
+    def test_list_returns_thumbnail(self):
+        self.client.post(self.url, {"photo": self.image()}, format="multipart")
+        item = self.client.get("/api/recipes/").data[0]
+        self.assertTrue(item["photo_thumb"].endswith("-mini.jpg"))

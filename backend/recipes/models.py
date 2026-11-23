@@ -18,6 +18,8 @@ class Recipe(models.Model):
     title = models.CharField("titre", max_length=200)
     description = models.TextField(blank=True)
     photo = models.ImageField(upload_to="recipes/%Y/%m/", blank=True)
+    # Miniature générée à l'envoi (recipes/images.py), utilisée par la liste.
+    photo_thumb = models.ImageField(upload_to="recipes/%Y/%m/", blank=True, editable=False)
     servings = models.PositiveSmallIntegerField("portions", default=4, validators=[MinValueValidator(1)])
     prep_minutes = models.PositiveIntegerField("temps de préparation (min)", default=0)
     cook_minutes = models.PositiveIntegerField("temps de cuisson (min)", default=0)
@@ -32,6 +34,12 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.title
+
+    def delete_photo(self):
+        """Supprime les fichiers de la photo et de sa miniature (sans sauvegarder)."""
+        for field in (self.photo, self.photo_thumb):
+            if field:
+                field.delete(save=False)
 
 
 class Ingredient(models.Model):

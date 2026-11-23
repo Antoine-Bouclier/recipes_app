@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from .images import InvalidImage, process_photo
 from .models import Ingredient, Recipe, Step
 
 
@@ -29,7 +30,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            "id", "title", "description", "photo", "servings", "prep_minutes",
+            "id", "title", "description", "photo", "photo_thumb", "servings", "prep_minutes",
             "cook_minutes", "category", "tags", "favorite", "updated_at",
         )
 
@@ -44,11 +45,11 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            "id", "title", "description", "photo", "servings", "prep_minutes",
+            "id", "title", "description", "photo", "photo_thumb", "servings", "prep_minutes",
             "cook_minutes", "category", "tags", "favorite", "created_at",
             "updated_at", "ingredients", "steps",
         )
-        read_only_fields = ("id", "photo", "created_at", "updated_at")
+        read_only_fields = ("id", "photo", "photo_thumb", "created_at", "updated_at")
 
     def validate_tags(self, value):
         if not isinstance(value, list) or not all(isinstance(t, str) for t in value):
@@ -90,7 +91,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
-class PhotoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ("photo",)
+class PhotoSerializer(serializers.Serializer):
+    """Envoi d'une photo : contrôlée, redimensionnée et nettoyée (recipes/images.py)."""
+
+    photo = serializers.FileField()
+
+    def validate_photo(self, value):
+        try:
+            return process_photo(value)
+        except InvalidImage as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def save(self, recipe):
+        photo, thumb = self.validated_data["photo"]
+        recipe.delete_photo()
+        recipe.photo.save(photo.name, photo, save=False)
+        recipe.photo_thumb.save(thumb.name, thumb, save=False)
+        recipe.save(update_fields=["photo", "photo_thumb", "updated_at"])
+        return recipe

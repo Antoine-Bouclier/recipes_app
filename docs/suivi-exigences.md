@@ -15,7 +15,7 @@ est dans [tests.md](tests.md#bout-en-bout-e2erunjs).
 
 | ID | État | Code | Tests |
 | --- | --- | --- | --- |
-| F-01 Créer une recette (photo facultative) | ✅ | `recipes/models.py`, `views/edit.js` | B, E, M |
+| F-01 Créer une recette (photo facultative) | ✅ | `recipes/models.py`, `recipes/images.py` (redimensionnement, miniature), `views/edit.js` | B, E, M |
 | F-02 Ingrédients (quantité, unité, nom) | ✅ | `recipes/serializers.py`, `views/edit.js` | B, E |
 | F-03 Étapes ordonnées avec durée facultative | ✅ | `recipes/models.py` (`Step`), `views/edit.js` | B, E |
 | F-04 Réordonner, modifier, supprimer une étape | ✅ | `views/edit.js` (↑ ↓ ✕), écriture en bloc | B, E, M |
@@ -58,7 +58,7 @@ est dans [tests.md](tests.md#bout-en-bout-e2erunjs).
 | --- | --- | --- |
 | NF-01 Responsive 360 → 1920 px | ✅ | mobile d'abord ; vérifié à 390 et 1280 px |
 | NF-02 Zones tactiles 48 px, texte ≥ 18 px en cuisine | ✅ | `--tap: 48px`, étapes en 1,125 à 1,35 rem |
-| NF-03 Recette ouverte en < 2 s en 4G | 🟡 | pas de build, ~60 Ko de JS/CSS ; à mesurer (Lighthouse) |
+| NF-03 Recette ouverte en < 2 s en 4G | 🟡 | pas de build, ~60 Ko de JS/CSS, photos ≤ 1600 px et miniatures de 600 px dans la liste ; à mesurer (Lighthouse) |
 | NF-04 Précision < 1 s | ✅ | recalcul sur l'heure de fin toutes les 250 ms |
 | NF-05 Hors ligne (PWA) | ✅ | `sw.js` + localStorage ; testé par `make e2e` (scénario 8) |
 | NF-06 Navigateurs récents | 🟡 | testé sur Chrome ; Safari, Firefox et Edge à vérifier |
@@ -70,7 +70,6 @@ est dans [tests.md](tests.md#bout-en-bout-e2erunjs).
 
 ## Reste à faire identifié
 
-- Redimensionner les photos à l'envoi (§7 du cahier des charges).
 - Recette manuelle sur téléphones réels (F-22, NF-06), notamment iPhone.
 - Audit d'accessibilité (NF-07) et mesure de performance (NF-03).
 - F-28 et pistes V2.

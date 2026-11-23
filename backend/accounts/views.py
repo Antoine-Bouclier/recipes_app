@@ -52,6 +52,8 @@ def me(request):
             return Response({"detail": "Mot de passe incorrect."}, status=status.HTTP_400_BAD_REQUEST)
         user = request.user
         logout(request)
+        for recipe in user.recipes.all():
+            recipe.delete_photo()  # les fichiers ne sont pas supprimés par la cascade
         user.delete()  # cascade : recettes, ingrédients, étapes, sessions
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(UserSerializer(request.user).data)

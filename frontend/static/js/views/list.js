@@ -67,7 +67,7 @@ export function listView(root) {
     return h(
       "article",
       { class: "recipe-card" },
-      r.photo ? h("img", { src: r.photo, alt: "", loading: "lazy" }) : h("div", { class: "recipe-card-placeholder", "aria-hidden": "true" }, "🍽"),
+      r.photo ? h("img", { src: r.photo_thumb || r.photo, alt: "", loading: "lazy" }) : h("div", { class: "recipe-card-placeholder", "aria-hidden": "true" }, "🍽"),
       h(
         "div",
         { class: "recipe-card-body" },

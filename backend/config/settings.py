@@ -101,7 +101,7 @@ SERVE_MEDIA = env_bool("DJANGO_SERVE_MEDIA", DEBUG)
 
 # En développement, les statiques sont servis depuis frontend/static : le dossier
 # STATIC_ROOT (rempli par collectstatic en production) n'a pas besoin d'exister.
-warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base")
+warnings.filterwarnings("ignore", message="No directory at: ")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", REPO_DIR / "media"))

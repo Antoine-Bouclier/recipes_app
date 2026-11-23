@@ -38,6 +38,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const assert = (cond, msg) => {
   if (!cond) throw new Error(msg);
 };
+/** Clic comme un utilisateur : l'élément est d'abord centré à l'écran (hors des messages en bas). */
+const tap = async (page, sel) => {
+  await page.$eval(sel, (e) => e.scrollIntoView({ block: "center" }));
+  await page.click(sel);
+};
 const text = (page, sel) => page.$eval(sel, (e) => e.textContent.trim());
 const clickText = (page, sel, txt) =>
   page.evaluate((sel, txt) => {
@@ -73,7 +78,7 @@ scenario("Inscription et arrivée sur « Mes recettes » (NF-08)", async ({ page
   assert((await page.evaluate(() => location.hash)) === "#/recettes", "pas redirigé vers #/recettes");
 });
 
-scenario("Création d'une recette avec ingrédients, étapes et réordonnancement (F-01 à F-04)", async ({ page }) => {
+scenario("Création d'une recette avec photo redimensionnée, ingrédients, étapes et réordonnancement (F-01 à F-04)", async ({ page }) => {
   await page.click('a[href="#/recettes/nouvelle"]');
   await page.waitForSelector("#r-title");
   await page.type("#r-title", "Pâtes E2E à la tomate");
@@ -100,20 +105,28 @@ scenario("Création d'une recette avec ingrédients, étapes et réordonnancemen
   steps = await page.$$(".step-row");
   await (await steps[2].$("input[id$='-s']")).type("3");
   await (await steps[2].$("input[id$='-l']")).type("Pâtes");
+  const photo = await page.$("#r-photo");
+  await photo.uploadFile(path.join(__dirname, "fixtures", "photo.jpg")); // 2400 × 1600
   // « Servir » est en 1re position : le descendre deux fois.
   await page.click('button[aria-label="Descendre l\'étape 1"]');
   await page.click('button[aria-label="Descendre l\'étape 2"]');
   await page.click("button[type=submit]");
   await page.waitForSelector(".recipe h1");
   ctx.recipeId = Number((await page.evaluate(() => location.hash)).match(/\d+/)[0]);
+  await page.waitForSelector(".recipe-photo");
+  const size = await page.$eval(".recipe-photo", (img) => new Promise((ok) => {
+    const done = () => ok([img.naturalWidth, img.naturalHeight]);
+    if (img.complete) done(); else img.onload = done;
+  }));
+  assert(size[0] === 1600 && size[1] === 1067, `photo non redimensionnée : ${size}`);
   const stepsText = await page.$$eval(".steps li > p:first-child", (els) => els.map((e) => e.textContent));
   assert(JSON.stringify(stepsText) === JSON.stringify(["Faire bouillir l'eau salée", "Cuire les pâtes", "Servir"]),
     `ordre des étapes inattendu : ${stepsText}`);
 });
 
 scenario("Fiche : portions ajustées et favori (F-08, F-09)", async ({ page }) => {
-  await page.click('button[aria-label="Une portion de plus"]');
-  await page.click('button[aria-label="Une portion de plus"]');
+  await tap(page, 'button[aria-label="Une portion de plus"]');
+  await tap(page, 'button[aria-label="Une portion de plus"]');
   const ingredients = await page.$$eval(".ingredients li", (els) => els.map((e) => e.textContent));
   assert(ingredients[0] === "400 g spaghetti", `quantité recalculée inattendue : ${ingredients[0]}`);
   await clickText(page, "button", "Ajouter aux favoris");
@@ -127,6 +140,8 @@ scenario("Liste : recherche, catégorie, étiquette, favoris (F-06, F-07, F-09)"
   await page.type("#search", "tomates"); // nom d'ingrédient
   await waitList();
   assert((await titles()).includes("Pâtes E2E à la tomate"), "recherche par ingrédient");
+  const thumb = await page.$eval(".recipe-card img", (img) => img.getAttribute("src"));
+  assert(thumb.endsWith("-mini.jpg"), `la liste doit utiliser la miniature : ${thumb}`);
   await page.click("#search", { clickCount: 3 });
   await page.keyboard.press("Backspace");
   await page.select("#category", "dessert");

@@ -11,3 +11,5 @@ lancée). Journal complet et captures d'écran dans `test-reports/logs/` (local)
 | 24/11/2026 00:32 | feature/donnees-demo | d73ab0c | http://localhost:8000 | ✅ OK | 13 | 0 | 0 | logs/e2e-2026-11-24_003219.log |
 | 24/11/2026 00:34 | chore/django-5-2 | d73ab0c | http://localhost:8000 | ✅ OK | 13 | 0 | 0 | logs/e2e-2026-11-24_003420.log |
 | 24/11/2026 00:37 | fix/portions-mode-cuisine | 489c50b | http://localhost:8000 | ✅ OK | 13 | 0 | 0 | logs/e2e-2026-11-24_003646.log |
+| 24/11/2026 00:39 | feature/photos-redimensionnees | 0951bad | http://localhost:8000 | ❌ ÉCHEC | 3 | 1 | 9 | logs/e2e-2026-11-24_003941.log |
+| 24/11/2026 00:40 | feature/photos-redimensionnees | 0951bad | http://localhost:8000 | ✅ OK | 13 | 0 | 0 | logs/e2e-2026-11-24_004003.log |
