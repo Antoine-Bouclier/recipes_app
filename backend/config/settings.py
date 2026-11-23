@@ -5,6 +5,7 @@ Toute la configuration variable passe par des variables d'environnement
 au développement local uniquement.
 """
 import os
+import warnings
 from pathlib import Path
 
 import dj_database_url
@@ -97,6 +98,10 @@ STATIC_ROOT = Path(os.environ.get("DJANGO_STATIC_ROOT", REPO_DIR / "staticfiles"
 # Photos : servies par Django si DJANGO_SERVE_MEDIA=1 (petite installation) ;
 # sinon par le serveur web frontal ou un stockage objet (voir docs/deploiement.md).
 SERVE_MEDIA = env_bool("DJANGO_SERVE_MEDIA", DEBUG)
+
+# En développement, les statiques sont servis depuis frontend/static : le dossier
+# STATIC_ROOT (rempli par collectstatic en production) n'a pas besoin d'exister.
+warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", REPO_DIR / "media"))

@@ -4,6 +4,8 @@
 #   - Docker (PostgreSQL, comme en production) : make up / make restart / make down
 #   - Local (SQLite, rechargement automatique du code) : make dev
 
+# Python ≥ 3.10 utilisé pour créer .venv : le plus récent trouvé (python3.13, 3.12…).
+PY_BOOT  ?= $(shell for v in 3.13 3.12 3.11 3.10; do command -v python$$v && break; done)
 PYTHON   ?= .venv/bin/python
 PIP      ?= .venv/bin/pip
 MANAGE    = cd backend && ../$(PYTHON) manage.py
@@ -20,7 +22,9 @@ help: ## Affiche cette aide
 # ---------------------------------------------------------------- Local ----
 
 .venv:
-	@python3 -m venv .venv
+	@[ -n "$(PY_BOOT)" ] || { echo "Python 3.10 ou plus introuvable (ex. : uv python install 3.12)."; exit 1; }
+	@echo "Création de .venv avec $(PY_BOOT)"
+	@$(PY_BOOT) -m venv .venv
 
 install: .venv ## Installe les dépendances et active le hook de tests
 	@$(PIP) install -q --upgrade pip

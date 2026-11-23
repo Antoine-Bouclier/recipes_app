@@ -12,7 +12,7 @@ et une recette déjà ouverte reste utilisable sans connexion.
 
 | Couche | Choix |
 | --- | --- |
-| API | Django 4.2 + Django REST Framework (Python 3.8 à 3.12) |
+| API | Django 5.2 LTS + Django REST Framework (Python 3.10 à 3.13) |
 | Base de données | PostgreSQL (Docker) ; SQLite en développement local |
 | Interface | HTML/CSS/JavaScript sans framework ni étape de build, PWA |
 | Production | Gunicorn + WhiteNoise dans une image Docker |

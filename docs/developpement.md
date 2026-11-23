@@ -2,8 +2,13 @@
 
 ## Installation
 
-Prérequis : Python 3.8 ou plus, `make`, Node 15 ou plus (pour les tests
+Prérequis : Python 3.10 ou plus, `make`, Node 15 ou plus (pour les tests
 JavaScript), Docker (pour lancer l'application comme en production).
+Si le Python du système est plus ancien : `uv python install 3.12` (ou pyenv),
+`make install` choisit ensuite automatiquement le plus récent.
+
+Si `.venv` a été créé avec un Python trop ancien, le recréer :
+`python3.12 -m venv --clear .venv && make install`.
 
 ```bash
 make install      # .venv, dépendances, hook de tests, .env
@@ -109,6 +114,7 @@ gitGraph
 | `main` | Production : toujours stable, chaque version porte un tag. **Aucun commit direct.** | — | — |
 | `dev` | Intégration de la prochaine version ; doit toujours démarrer et passer les tests | `main` | `main` (publication d'une version) |
 | `feature/<sujet>` | Une fonctionnalité (ex. `feature/minuteur-libre`) | `dev` | `dev` |
+| `chore/<sujet>` | Maintenance sans changement visible (dépendances, outillage) | `dev` | `dev` |
 | `fix/<sujet>` | Un bug trouvé en développement | `dev` | `dev` |
 | `docs/<sujet>` | Documentation seule | `dev` | `dev` |
 | `hotfix/<sujet>` | Bug urgent en production | `main` | `main` **et** `dev` |
@@ -232,6 +238,8 @@ d'abord le test dans `frontend/tests/`, puis le code. `timer-manager.js` et
 ## Conventions de code
 
 - Python : PEP 8, lignes ≤ 120 caractères, docstrings en français.
+- Dépendances : versions bornées dans `backend/requirements.txt` ; Django reste
+  sur une version LTS (5.2, maintenue jusqu'en avril 2028).
 - JavaScript : modules ES, pas de dépendance externe, pas d'`innerHTML`
   (utiliser `h()` de `dom.js`), textes de l'interface en français (NF-11).
 - CSS : couleurs uniquement via les variables de `:root` (thème sombre
