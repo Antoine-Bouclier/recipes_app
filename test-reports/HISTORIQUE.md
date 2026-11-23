@@ -13,3 +13,5 @@ testés s'appliquent. Le journal complet de chaque passage est dans
 | 23/11/2026 23:37 | master | 3cbaa54 | ✅ OK | 18 | 18 | logs/2026-11-23_233734.log |
 | 23/11/2026 23:38 | master | 3cbaa54 | ✅ OK | 18 | 18 | logs/2026-11-23_233836.log |
 | 23/11/2026 23:41 | docs/workflow-branches | 5a3be89 | ✅ OK | 18 | 18 | logs/2026-11-23_234136.log |
+| 23/11/2026 23:44 | docs/workflow-branches | 9fac284 | ✅ OK | 18 | 18 | logs/2026-11-23_234355.log |
+| 23/11/2026 23:51 | feature/donnees-demo | 4e44cb1 | ✅ OK | 25 | 18 | logs/2026-11-23_235055.log |

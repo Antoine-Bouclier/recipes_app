@@ -116,7 +116,10 @@ REST_FRAMEWORK = {
 
 # NF-08 : en production, tout passe en HTTPS. DJANGO_HTTPS=0 permet de tester
 # l'image de production en local sur http://localhost.
-if not DEBUG and env_bool("DJANGO_HTTPS", True):
+# Vrai uniquement en production réelle (servie en HTTPS). Sert aussi de garde-fou
+# aux commandes qui ne doivent pas tourner en production (ex. seed_demo).
+IS_PRODUCTION = not DEBUG and env_bool("DJANGO_HTTPS", True)
+if IS_PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
