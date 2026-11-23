@@ -69,14 +69,111 @@ cd frontend && node tests/timers.test.mjs            # un fichier JS
 
 Le détail (et la recette manuelle sur téléphone) est dans [tests.md](tests.md).
 
+## Branches et versions
+
+```mermaid
+gitGraph
+    commit id: "v1.0.0" tag: "v1.0.0"
+    branch dev
+    checkout dev
+    branch feature/minuteur-libre
+    checkout feature/minuteur-libre
+    commit
+    commit
+    checkout dev
+    merge feature/minuteur-libre
+    branch fix/recherche
+    checkout fix/recherche
+    commit
+    checkout dev
+    merge fix/recherche
+    checkout main
+    merge dev tag: "v1.1.0"
+```
+
+| Branche | Rôle | Part de | Fusionne dans |
+| --- | --- | --- | --- |
+| `main` | Production : toujours stable, chaque version porte un tag. **Aucun commit direct.** | — | — |
+| `dev` | Intégration de la prochaine version ; doit toujours démarrer et passer les tests | `main` | `main` (publication d'une version) |
+| `feature/<sujet>` | Une fonctionnalité (ex. `feature/minuteur-libre`) | `dev` | `dev` |
+| `fix/<sujet>` | Un bug trouvé en développement | `dev` | `dev` |
+| `docs/<sujet>` | Documentation seule | `dev` | `dev` |
+| `hotfix/<sujet>` | Bug urgent en production | `main` | `main` **et** `dev` |
+
+Noms en minuscules, mots séparés par des tirets, en français
+(`feature/import-url`, `fix/minuteur-pause`). Une branche = une tâche courte ;
+elle est supprimée une fois fusionnée.
+
+### Cycle d'une fonctionnalité
+
+```bash
+git switch dev && git pull                     # partir d'un dev à jour
+git switch -c feature/minuteur-libre           # créer la branche
+# … coder, committer (make test passe à chaque commit) …
+git push -u origin feature/minuteur-libre      # publier la branche
+```
+
+Puis sur GitHub : **Pull Request de `feature/minuteur-libre` vers `dev`**,
+relire le diff, fusionner, supprimer la branche. En local ensuite :
+
+```bash
+git switch dev && git pull
+git branch -d feature/minuteur-libre
+```
+
+Si `dev` a avancé pendant le travail : `git switch feature/… && git merge dev`,
+corriger les conflits éventuels, `make test`, puis pousser.
+
+### Publier une version
+
+1. Sur `dev` : `make test` vert, recette manuelle faite ([tests.md](tests.md)),
+   `VERSION` incrémenté dans `frontend/sw.js` si `frontend/` a changé,
+   [suivi-exigences.md](suivi-exigences.md) à jour.
+2. Sur GitHub : **Pull Request de `dev` vers `main`**, fusionner.
+3. En local, poser le tag sur `main` :
+
+   ```bash
+   git switch main && git pull
+   git tag -a v1.1.0 -m "Version 1.1.0 : …"
+   git push origin v1.1.0
+   ```
+
+4. Déployer ([deploiement.md](deploiement.md)) et revenir sur `dev`.
+
+Numérotation `vMAJEUR.MINEUR.CORRECTIF` : `v1.1.0` pour un lot de
+fonctionnalités (V1.1 du cahier des charges), `v1.1.1` pour un correctif,
+`v2.0.0` pour le lot V2.
+
+### Correctif urgent en production
+
+```bash
+git switch main && git pull
+git switch -c hotfix/minuteur-ne-sonne-pas
+# … corriger, committer …
+git push -u origin hotfix/minuteur-ne-sonne-pas
+```
+
+Pull Request vers `main`, fusionner, taguer (`v1.0.1`), puis reporter le
+correctif dans `dev` : `git switch dev && git pull && git merge main && git push`.
+
+### Garde-fous
+
+- **Localement** : le hook `pre-commit` refuse tout commit sur `main`. Les
+  fusions passent par GitHub, et le tag se pose sans commit.
+- **Sur GitHub** (réglage à faire une fois, dans *Settings → Branches → Add
+  branch protection rule*, pour `main` et `dev`) : cocher *Require a pull
+  request before merging*. Sur un dépôt privé, cette option demande un compte
+  GitHub payant ; le hook local reste alors la protection principale.
+
 ## Règles de commit
 
 1. `make test` doit être vert : le hook `pre-commit` le lance et
    bloque le commit sinon. Il ajoute aussi une ligne à
    `test-reports/HISTORIQUE.md`, incluse dans le commit.
-2. Un commit = une étape cohérente (une fonctionnalité, une correction).
-3. Messages en français : une ligne de titre courte, puis le détail si utile.
-4. Si le besoin change : mettre à jour `docs/cahier-des-charges.md` et
+2. Jamais de commit direct sur `main` (voir ci-dessus).
+3. Un commit = une étape cohérente (une fonctionnalité, une correction).
+4. Messages en français : une ligne de titre courte, puis le détail si utile.
+5. Si le besoin change : mettre à jour `docs/cahier-des-charges.md` et
    `docs/suivi-exigences.md` **dans le même commit** que le code.
 
 Ne jamais contourner le hook (`--no-verify`) : si un test échoue, on corrige.
