@@ -7,7 +7,33 @@ function field(label, attrs) {
   return h("div", { class: "field" }, h("label", { for: id }, label), h("input", { id, required: true, ...attrs }));
 }
 
-export function authView(root, { mode, onLogin }) {
+// Modes de connexion proposés par le serveur ; hors ligne, on garde le formulaire classique.
+let configPromise = null;
+function authConfig() {
+  configPromise ??= Api.authConfig().catch(() => ({ sso: false, password_login: true }));
+  return configPromise;
+}
+
+/** Connexion unique : le compte partagé de tous les sites (inscription comprise). */
+function ssoCard(config) {
+  const failed = new URLSearchParams(location.search).get("connexion") === "echec";
+  setTitle("Connexion");
+  return h(
+    "div",
+    { class: "card auth-card" },
+    h("h1", {}, "Connexion"),
+    h("p", { class: "muted" }, "Utilisez votre compte antoine-bouclier.fr, le même pour tous les sites. Pas encore de compte ? Vous pourrez le créer à l'étape suivante."),
+    failed && h("p", { class: "form-error", role: "alert" }, "La connexion n'a pas abouti. Réessayez."),
+    h("a", { class: "btn btn-primary btn-block", href: `${config.sso_login_url}?next=/` }, "Se connecter"),
+  );
+}
+
+export async function authView(root, { mode, onLogin }) {
+  const config = await authConfig();
+  if (config.sso && !config.password_login) {
+    root.append(ssoCard(config));
+    return;
+  }
   const isLogin = mode === "login";
   setTitle(isLogin ? "Connexion" : "Créer un compte");
   const error = h("p", { class: "form-error", role: "alert" });
@@ -28,6 +54,7 @@ export function authView(root, { mode, onLogin }) {
       isLogin ? "Pas encore de compte ? " : "Déjà inscrit ? ",
       h("a", { href: isLogin ? "#/inscription" : "#/connexion" }, isLogin ? "Créer un compte" : "Se connecter"),
     ),
+    config.sso && h("p", { class: "center" }, h("a", { class: "btn btn-block", href: `${config.sso_login_url}?next=/` }, "Se connecter avec le compte partagé")),
   );
   form.addEventListener("submit", async (e) => {
     e.preventDefault();

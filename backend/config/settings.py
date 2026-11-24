@@ -122,3 +122,32 @@ if not DEBUG and env_bool("DJANGO_HTTPS", True):
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+
+# --- Connexion unique (compte partagé entre tous les sites, via OIDC) ---
+# Activée dès que OIDC_RP_CLIENT_ID est défini (voir .env.example).
+SSO_ENABLED = bool(os.environ.get("OIDC_RP_CLIENT_ID"))
+# Connexion et inscription par mot de passe local : désactivées par défaut quand le SSO est actif.
+PASSWORD_LOGIN_ENABLED = env_bool("PASSWORD_LOGIN_ENABLED", not SSO_ENABLED)
+
+# L'admin Django garde la connexion par mot de passe local.
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
+
+if SSO_ENABLED:
+    AUTHENTICATION_BACKENDS.insert(0, "accounts.oidc.SSOBackend")
+    OIDC_RP_CLIENT_ID = os.environ["OIDC_RP_CLIENT_ID"]
+    OIDC_RP_CLIENT_SECRET = os.environ["OIDC_RP_CLIENT_SECRET"]
+    OIDC_OP_AUTHORIZATION_ENDPOINT = os.environ["OIDC_OP_AUTHORIZATION_ENDPOINT"]
+    OIDC_OP_TOKEN_ENDPOINT = os.environ["OIDC_OP_TOKEN_ENDPOINT"]
+    OIDC_OP_USER_ENDPOINT = os.environ["OIDC_OP_USER_ENDPOINT"]
+    OIDC_OP_JWKS_ENDPOINT = os.environ["OIDC_OP_JWKS_ENDPOINT"]
+    OIDC_OP_LOGOUT_ENDPOINT = os.environ.get("OIDC_OP_LOGOUT_ENDPOINT", "")
+    OIDC_RP_SIGN_ALGO = "RS256"
+    OIDC_RP_SCOPES = "openid email profile"
+    OIDC_USE_PKCE = True
+    OIDC_TIMEOUT = 10
+    OIDC_STORE_ID_TOKEN = True  # pour fermer aussi la session du fournisseur à la déconnexion
+    if OIDC_OP_LOGOUT_ENDPOINT:
+        OIDC_OP_LOGOUT_URL_METHOD = "accounts.oidc.provider_logout_url"
+    LOGIN_REDIRECT_URL = "/"
+    LOGIN_REDIRECT_URL_FAILURE = "/?connexion=echec"
+    LOGOUT_REDIRECT_URL = "/"

@@ -15,11 +15,12 @@ http://127.0.0.1:8000/api/
 
 | Méthode | Route | Corps | Réponse |
 | --- | --- | --- | --- |
-| POST | `/auth/register/` *(public)* | `{email, name?, password}` | `201` utilisateur, connecté |
-| POST | `/auth/login/` *(public)* | `{email, password}` | `200` utilisateur ; `400` si invalide |
-| POST | `/auth/logout/` *(public)* | — | `204` |
-| GET | `/auth/me/` | — | `{id, email, name, date_joined}` |
-| DELETE | `/auth/me/` | `{password}` | `204` ; supprime le compte et toutes ses données (NF-09) |
+| GET | `/auth/config/` *(public)* | — | `{sso, sso_login_url, password_login}` : modes de connexion proposés |
+| POST | `/auth/register/` *(public)* | `{email, name?, password}` | `201` utilisateur, connecté ; `403` si la connexion par mot de passe est désactivée |
+| POST | `/auth/login/` *(public)* | `{email, password}` | `200` utilisateur ; `400` si invalide ; `403` si désactivée |
+| POST | `/auth/logout/` *(public)* | — | `204` ; compte partagé : `200 {redirect}`, adresse de déconnexion du fournisseur d'identité |
+| GET | `/auth/me/` | — | `{id, email, name, date_joined, has_password}` (`has_password` faux pour un compte partagé) |
+| DELETE | `/auth/me/` | `{password}`, ou `{email}` pour un compte partagé | `204` ; supprime le compte et toutes ses données (NF-09) |
 | GET | `/auth/export/` | — | fichier JSON : utilisateur + recettes complètes (NF-09) |
 
 ## Recettes — `recipes/`

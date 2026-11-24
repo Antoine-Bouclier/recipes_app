@@ -34,6 +34,7 @@ porte donc la trace des tests qui l'ont validé.
 | Fichier | Couvre |
 | --- | --- |
 | `accounts/tests/test_auth.py` | inscription, mot de passe haché, doublons, connexion/déconnexion, export et suppression du compte (NF-08, NF-09) |
+| `accounts/tests/test_sso.py` | connexion unique : création et rattachement des comptes par `sub`, e-mail non vérifié refusé, API sans mot de passe local, déconnexion du fournisseur, suppression du compte |
 | `recipes/tests/test_api.py` | création avec ingrédients/étapes, réordonnancement, modification, suppression, recherche, filtres, isolation entre utilisateurs, photo (F-01 à F-09, NF-08) |
 | `cooking/tests/test_session.py` | sauvegarde et relecture de l'avancement, validation des minuteurs, réinitialisation, isolation (F-15, F-16, F-25) |
 

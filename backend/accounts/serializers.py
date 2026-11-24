@@ -5,10 +5,16 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # Faux pour un compte partagé (connexion unique) : pas de mot de passe propre à l'app.
+    has_password = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ("id", "email", "name", "date_joined")
-        read_only_fields = ("id", "date_joined")
+        fields = ("id", "email", "name", "date_joined", "has_password")
+        read_only_fields = ("id", "date_joined", "has_password")
+
+    def get_has_password(self, user):
+        return user.has_usable_password()
 
 
 class RegisterSerializer(serializers.ModelSerializer):

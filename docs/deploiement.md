@@ -80,3 +80,26 @@ make restart      # reconstruit l'image et relance l'application
 
 Si `frontend/` a changé, vérifier que `VERSION` a été incrémenté dans
 `frontend/sw.js`, sinon les utilisateurs garderont l'ancienne interface en cache.
+
+## Connexion unique (OIDC)
+
+L'application peut déléguer la connexion à un fournisseur d'identité OpenID Connect
+(par exemple Authentik), pour partager un même compte entre plusieurs sites.
+
+1. Chez le fournisseur, créer un client **confidentiel** avec l'adresse de retour
+   `https://<domaine>/oidc/callback/`, les scopes `openid email profile` et le flux
+   *authorization code*.
+2. Renseigner dans `.env` les variables `OIDC_*` (voir `.env.example`). Les adresses
+   sont données par `/.well-known/openid-configuration` du fournisseur.
+3. Relancer l'application (`make restart`). La migration `accounts.0002` ajoute le champ `oidc_sub`.
+
+Comportement :
+
+- L'écran de connexion n'affiche plus qu'un bouton « Se connecter ». La connexion et
+  l'inscription par mot de passe sont désactivées, sauf avec `PASSWORD_LOGIN_ENABLED=1`.
+  L'admin Django garde son mot de passe local.
+- Un compte est relié au compte partagé par le claim `sub`. Un compte local existant
+  n'est relié par e-mail que si le fournisseur envoie `email_verified: true`. Sinon,
+  il faut renseigner `oidc_sub` à la main (admin ou shell Django).
+- La déconnexion renvoie vers le fournisseur (`OIDC_OP_LOGOUT_ENDPOINT`) pour fermer
+  aussi la session partagée.

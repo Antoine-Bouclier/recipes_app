@@ -14,8 +14,12 @@ urlpatterns = [
     path("manifest.webmanifest", views.manifest, name="manifest"),
 ]
 
+if settings.SSO_ENABLED:
+    # Connexion unique : /oidc/authenticate/ → fournisseur d'identité → /oidc/callback/
+    urlpatterns.append(path("oidc/", include("mozilla_django_oidc.urls")))
+
 if settings.SERVE_MEDIA:
     urlpatterns += [re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT})]
 
 # Toutes les autres URL renvoient l'application (routage côté navigateur).
-urlpatterns += [re_path(r"^(?!api/|admin/|static/|media/).*$", views.index, name="index")]
+urlpatterns += [re_path(r"^(?!api/|admin/|static/|media/|oidc/).*$", views.index, name="index")]

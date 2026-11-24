@@ -64,7 +64,9 @@ export const Api = {
   login: (email, password) => request("/auth/login/", { method: "POST", body: { email, password } }),
   register: (data) => request("/auth/register/", { method: "POST", body: data }),
   logout: () => request("/auth/logout/", { method: "POST" }),
-  deleteAccount: (password) => request("/auth/me/", { method: "DELETE", body: { password } }),
+  // `confirmation` : { password } pour un compte local, { email } pour un compte partagé.
+  deleteAccount: (confirmation) => request("/auth/me/", { method: "DELETE", body: confirmation }),
+  authConfig: () => request("/auth/config/"),
 
   listRecipes: (params = {}) => request(`/recipes/${qs(params)}`),
   getRecipe: (id) => request(`/recipes/${id}/`),

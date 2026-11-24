@@ -34,6 +34,8 @@ class User(AbstractUser):
     last_name = None
     email = models.EmailField("e-mail", unique=True)
     name = models.CharField("nom", max_length=150, blank=True)
+    # Identifiant stable du compte partagé (claim `sub` OIDC) ; vide pour un compte local.
+    oidc_sub = models.CharField("identifiant SSO", max_length=255, unique=True, null=True, blank=True)
     # `date_joined` (hérité) sert de date de création.
 
     USERNAME_FIELD = "email"

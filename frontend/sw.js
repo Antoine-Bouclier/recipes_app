@@ -8,7 +8,7 @@
  *
  * ⚠ Incrémenter VERSION à chaque modification de la liste SHELL ou de ce fichier.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `shell-${VERSION}`;
 const API_CACHE = "api";
 
@@ -76,7 +76,7 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/admin/") || url.pathname.startsWith("/api/auth/export")) return;
+  if (url.pathname.startsWith("/admin/") || url.pathname.startsWith("/oidc/") || url.pathname.startsWith("/api/auth/export")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(request, SHELL_CACHE, "/"));

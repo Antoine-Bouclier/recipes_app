@@ -70,7 +70,7 @@ async function route() {
   const hash = location.hash || "#/recettes";
 
   if (!user) {
-    authView(root, { mode: hash === "#/inscription" ? "register" : "login", onLogin });
+    await authView(root, { mode: hash === "#/inscription" ? "register" : "login", onLogin });
     return;
   }
   if (hash === "#/connexion" || hash === "#/inscription") {

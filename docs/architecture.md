@@ -33,7 +33,7 @@ la même origine que l'API.
 | App | Rôle | Fichiers clés |
 | --- | --- | --- |
 | `config` | Réglages, URL, vues qui servent `index.html`, `sw.js`, le manifeste | `settings.py`, `urls.py`, `views.py` |
-| `accounts` | Utilisateur identifié par e-mail ; inscription, connexion, export et suppression (NF-09) | `models.py`, `views.py` |
+| `accounts` | Utilisateur identifié par e-mail ; inscription, connexion (mot de passe ou connexion unique OIDC), export et suppression (NF-09) | `models.py`, `views.py`, `oidc.py` |
 | `recipes` | Recette, Ingrédient, Étape ; CRUD, recherche, filtres, photo | `models.py`, `serializers.py`, `views.py` |
 | `cooking` | Session de cuisine : étapes et ingrédients cochés, minuteurs | `models.py`, `serializers.py`, `views.py` |
 

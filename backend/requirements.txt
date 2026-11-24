@@ -6,3 +6,4 @@ Pillow>=10,<11
 psycopg2-binary>=2.9,<3
 whitenoise>=6.6,<7
 gunicorn>=22,<24
+mozilla-django-oidc>=4.0.1,<6  # connexion unique (4.x pour Python < 3.10)
