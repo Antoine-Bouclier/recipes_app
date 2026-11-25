@@ -8,7 +8,7 @@
  *
  * ⚠ Incrémenter VERSION à chaque modification de la liste SHELL ou de ce fichier.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL_CACHE = `shell-${VERSION}`;
 const API_CACHE = "api";
 
