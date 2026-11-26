@@ -83,6 +83,9 @@ h2 { font-size: 1.2rem; margin: 24px 0 8px; }
   position: sticky; top: 0; z-index: 10;
 }
 .brand { font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; min-height: var(--tap); display: flex; align-items: center; gap: 6px; }
+.topbar__gauche { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.retour-accueil { min-height: var(--tap); display: flex; align-items: center; padding: 0 10px; border-radius: var(--radius); color: var(--muted); text-decoration: none; font-size: .9rem; white-space: nowrap; }
+.retour-accueil:hover { background: var(--surface-2); color: var(--text); }
 #nav { display: flex; gap: 4px; }
 #nav a { min-height: var(--tap); display: flex; align-items: center; padding: 0 12px; border-radius: var(--radius); color: var(--text); text-decoration: none; }
 #nav a:hover { background: var(--surface-2); }
