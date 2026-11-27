@@ -57,6 +57,13 @@ recettes.example.fr {
 
 Le cahier des charges demande un **hébergeur en Europe** (RGPD).
 
+L'application envoie elle-même une **Content-Security-Policy** stricte sur
+toutes les réponses (réglage `CONTENT_SECURITY_POLICY`, middleware
+`config.middleware.ContentSecurityPolicyMiddleware`) : tout vient du site,
+aucun script ni style inline. Ne pas ajouter de `<script>`/`<style>` inline,
+d'attribut `style=` ou `onclick=` dans l'interface : passer par les fichiers de
+`frontend/static/` (les tests de `backend/config/tests.py` le vérifient).
+
 Vérification : `docker compose exec web python manage.py check --deploy`.
 Créer un administrateur : `docker compose exec web python manage.py createsuperuser`.
 

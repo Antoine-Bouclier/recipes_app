@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.ContentSecurityPolicyMiddleware",  # en premier : couvre aussi statiques et photos
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # fichiers statiques en production
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -51,6 +52,23 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+
+# Content-Security-Policy stricte, alignée sur amaruq.fr : tout vient du site
+# lui-même, aucun script ni style inline (l'interface n'en utilise pas, l'admin
+# Django 4.2 non plus). La connexion unique passe par des liens et des
+# redirections (navigation), que la CSP ne restreint pas ; form-action 'self'
+# suffit car les seuls formulaires (connexion locale, admin) restent sur le site.
+CONTENT_SECURITY_POLICY = "; ".join([
+    "default-src 'self'",
+    "img-src 'self' data:",
+    "style-src 'self'",
+    "script-src 'self'",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+])
 
 TEMPLATES = [
     {
