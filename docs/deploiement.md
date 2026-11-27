@@ -1,5 +1,20 @@
 # Déploiement
 
+## Sur le serveur amaruq.fr
+
+| Dossier | Rôle |
+|---|---|
+| `~/website/services/recipes_app` | **Production** (https://recettes.amaruq.fr) : conteneurs `recettes` et `recipes_app-db-1` |
+| `~/dev/recettes` | Copie de travail pour les branches. Aucune base n'y tourne : `make backup`, `make logs`, `make shell`… y échouent (« service "db" is not running ») |
+| `~/website/dev/instances/<nom>` | Previews créées par `preview up` |
+
+Les commandes de prod (`make backup`, `make restart`, `make logs`, `make dbshell`)
+se lancent donc **depuis `~/website/services/recipes_app`**.
+
+La sauvegarde quotidienne y est lancée par cron à 3 h avec
+`backups/run-backup.sh`, qui sauvegarde la base et les photos (volume `media`).
+Ce script n'existe que sur le serveur : il est dans `backups/`, qui est exclu de git.
+
 ## Image Docker
 
 Le `Dockerfile` produit une image unique : Django servi par Gunicorn, fichiers
@@ -59,6 +74,12 @@ fichiers de plus de 30 jours. Le planifier chaque jour :
 
 ```
 0 3 * * * cd /chemin/recipes_app && ./scripts/backup.sh >> backups/backup.log 2>&1
+```
+
+Sur amaruq.fr, la ligne réellement en place est :
+
+```
+0 3 * * * ~/website/services/recipes_app/backups/run-backup.sh >> ~/website/services/recipes_app/backups/backup.log 2>&1
 ```
 
 Restauration :
