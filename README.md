@@ -29,6 +29,10 @@ make up         # démarre l'application avec Docker  →  http://localhost:8000
 
 Puis créer un compte dans l'application.
 
+Sur le serveur amaruq.fr, la production tourne depuis `~/website/services/recipes_app` :
+c'est là qu'il faut lancer `make backup`, `make restart` ou `make logs`
+(voir [docs/deploiement.md](docs/deploiement.md)).
+
 ### Commandes du Makefile
 
 | Commande | Effet |
